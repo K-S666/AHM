@@ -183,7 +183,7 @@ arma::mat AHM_G_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma:
     if(change == 1){
       G_new = Rcpp::as<arma::mat>(operate["G_new"]);
       prob_edge = operate["prob"];
-      G_new=update_G(y,s,g,alpha,alpha_all,Q, G,R, N, J, K, L, p_add, pi0, delta0,G_new,prob_edge, action=1);
+      G_new=update_G(y,s,g,alpha,alpha_all,Q, G,R, N, J, K, L, p_add, pi0, delta0,G_new,prob_edge, 1);
     }
   } else {
     operate = reduce_path_sample1(G,K);
@@ -191,7 +191,7 @@ arma::mat AHM_G_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma:
     if(change == 1){
       G_new = Rcpp::as<arma::mat>(operate["G_new"]);
       prob_edge = operate["prob"];
-      G_new=update_G(y,s,g,alpha,alpha_all,Q, G,R, N, J, K, L, p_add, pi0, delta0,G_new,prob_edge, action=2);
+      G_new=update_G(y,s,g,alpha,alpha_all,Q, G,R, N, J, K, L, p_add, pi0, delta0,G_new,prob_edge, 2);
     }
   }
 
