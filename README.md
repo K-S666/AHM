@@ -134,9 +134,11 @@ See `?AHMQ`, `?AHM`, and `?Est_fun` for full argument lists and details.
 
 GPL (≥ 2)
 
-## Author
+## Authors
 
-**Xue Wang** — [wangx625@nenu.edu.cn](mailto:wangx625@nenu.edu.cn)
+- **Xue Wang** — [wangx625@nenu.edu.cn](mailto:wangx625@nenu.edu.cn)
+- **Yinghan Chen** — [yinghanc@unr.edu](mailto:yinghanc@unr.edu)
+- **Shiyu Wang** — [swang44@uga.edu](mailto:swang44@uga.edu)
 
 ## Repository
 
