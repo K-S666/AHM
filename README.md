@@ -20,19 +20,19 @@ A fixed-Q variant (`AHM()`) is also provided when the Q-matrix is known. The pac
 
 ### Install from GitHub
 
-Install [**remotes**](https://cran.r-project.org/package=remotes) or [**devtools**](https://cran.r-project.org/package=devtools) once if needed, then run:
+Install [**remotes**](https://cran.r-project.org/package=remotes) or [**devtools**](https://cran.r-project.org/package=devtools) once if needed (`install.packages("remotes")` or `install.packages("devtools")`), then run:
 
 ```r
-install.packages("remotes")   # only if remotes is not installed
 remotes::install_github("K-S666/AHM")
 ```
 
-Alternatively:
+Alternatively, with devtools:
 
 ```r
-install.packages("devtools")  # only if devtools is not installed
 devtools::install_github("K-S666/AHM")
 ```
+
+No need to run `library(remotes)` or `library(devtools)` — the `::` prefix calls the function directly.
 
 **Rcpp**, **RcppArmadillo**, and **rgen** (compile-time dependency) are installed automatically when missing.
 
