@@ -1,0 +1,6 @@
+^AHM$
+^.*\.Rproj$
+^\.Rproj\.user$
+^r_lib_test$
+^AHM\.Rcheck$
+^AHM_.*\.tar\.gz$

@@ -1,0 +1,24 @@
+Package: AHM
+Type: Package
+Title: Bayesian DINA Estimation with Unknown Q-Matrix and Attribute Hierarchy
+Version: 1.0.0
+Date: 2026-06-23
+Authors@R: person("Xue", "Wang", role = c("aut", "cre"),
+                  email = "wangx625@nenu.edu.cn")
+Maintainer: Xue Wang <wangx625@nenu.edu.cn>
+Description: Implements Bayesian MCMC estimation for the DINA cognitive
+    diagnosis model when both the Q-matrix and the attribute hierarchy are
+    unknown. The package estimates item slipping and guessing parameters,
+    examinee attribute profiles, latent class probabilities, the Q-matrix, and
+    the attribute hierarchy. It also includes post-processing for attribute
+    label switching, Gelman-Rubin Rhat diagnostics, DIC-based chain selection,
+    posterior point estimates, simulation utilities, and an ECPE real-data
+    example.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 2.10)
+Imports: Rcpp (>= 1.0.0), parallel
+Suggests: shiny
+LinkingTo: Rcpp (>= 1.0.0), RcppArmadillo (>= 0.9.200), rgen
+Config/roxygen2/version: 8.0.0
