@@ -16,22 +16,21 @@ A fixed-Q variant (`AHM()`) is also provided when the Q-matrix is known. The pac
 - A C++ compiler supported by **Rcpp** (on Windows, [Rtools](https://cran.r-project.org/bin/windows/Rtools/) is required to build from source)
 - System dependencies for compiling **RcppArmadillo**
 
+**Windows users:** install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) (matching your R version) before running `install_github`. The package is built from source and cannot be installed without a C++ toolchain.
+
 ### Install from GitHub
 
-The recommended way to install the development version is with [**remotes**](https://cran.r-project.org/package=remotes) or [**devtools**](https://cran.r-project.org/package=devtools):
+Install [**remotes**](https://cran.r-project.org/package=remotes) or [**devtools**](https://cran.r-project.org/package=devtools) once if needed, then run:
 
 ```r
-# Install remotes if needed
-if (!requireNamespace("remotes", quietly = TRUE)) {
-  install.packages("remotes")
-}
-
+install.packages("remotes")   # only if remotes is not installed
 remotes::install_github("K-S666/AHM")
 ```
 
 Alternatively:
 
 ```r
+install.packages("devtools")  # only if devtools is not installed
 devtools::install_github("K-S666/AHM")
 ```
 
