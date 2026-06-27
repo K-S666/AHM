@@ -209,7 +209,7 @@ plot_G_graph <- function(G,
 {
   type <- match.arg(type)
 
-  if (inherits(G, "AHMQ_simulation_summary")) {
+  if (inherits(G, "simulation_summary")) {
     if (is.null(G_posterior)) {
       G_posterior <- G$aligned_estimates$Est_GG
     }
@@ -581,6 +581,7 @@ traceplot_AHMQ <- function(result,
   }
   invisible(pages)
 }
+
 
 
 

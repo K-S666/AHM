@@ -189,7 +189,7 @@ single_run_bias <- function(true, estimate)
 #' \code{1 -> 2 -> 3} versus \code{2 -> 3 -> 1}, as recovery errors.
 #'
 #' This function is intended for simulated data. For real data summaries use
-#' \code{\link{summary_AHMQ}}, because no true \code{Q}, \code{G}, or
+#' \code{\link{summary_est}}, because no true \code{Q}, \code{G}, or
 #' \code{alpha} is available for real data label alignment.
 #'
 #' @param est Output from \code{\link{Est_fun}}. If \code{align_labels = TRUE},
@@ -209,7 +209,7 @@ single_run_bias <- function(true, estimate)
 #'   aligned estimate object returned as \code{aligned_estimates}; set
 #'   \code{FALSE} to reduce object size.
 #' @param verbose If \code{TRUE}, print the true-label matching permutation.
-#' @return An object of class \code{"AHMQ_simulation_summary"} containing the
+#' @return An object of class \code{"simulation_summary"} containing the
 #'   truth-aligned estimates, item-parameter bias summaries, AAR/PAR, G/Q
 #'   recovery metrics, Rhat table, and label-alignment metadata.
 #' @export
@@ -321,14 +321,14 @@ simu_result_summary <- function(est,
     truth_label_Q_distance = aligned_est$truth_label_Q_distance,
     truth_label_G_distance = aligned_est$truth_label_G_distance
   )
-  class(out) <- "AHMQ_simulation_summary"
+  class(out) <- "simulation_summary"
   out
 }
 
 #' @export
-print.AHMQ_simulation_summary <- function(x, digits = 3, ...)
+print.simulation_summary <- function(x, digits = 3, ...)
 {
-  cat("AHMQ simulation summary\n")
+  cat("Simulation summary\n")
   if (isTRUE(x$known_Q)) {
     cat("Q-matrix is fixed and treated as known; Q recovery is not evaluated.\n")
   }
@@ -382,3 +382,4 @@ print.AHMQ_simulation_summary <- function(x, digits = 3, ...)
   cat("PAR:", round(x$alpha_metrics$PAR, digits), "\n")
   invisible(x)
 }
+

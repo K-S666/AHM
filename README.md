@@ -72,7 +72,7 @@ fit <- AHMQ(
 )
 
 est <- Est_fun(fit, cut_value = 0.2)
-summary_AHMQ(est)
+summary_est(est)
 ```
 
 ### Known Q-matrix (`AHM`)
@@ -88,7 +88,7 @@ fit <- AHM(
 )
 
 est <- Est_fun(fit)
-summary_AHMQ(est)
+summary_est(est)
 ```
 
 ### Simulate data
@@ -121,7 +121,7 @@ run_AHM_app()
 | `AHMQ()` | Multi-chain MCMC when the attribute hierarchy and Q-matrix are unknown |
 | `AHM()` | Multi-chain MCMC when the attribute hierarchy is unknown and Q-matrix is known |
 | `Est_fun()` | Post-process chains: Rhat, DIC selection, label switching, point estimates |
-| `summary_AHMQ()` | Print a concise summary of `Est_fun()` output |
+| `summary_est()` | Print a concise summary of `Est_fun()` output |
 | `compute_DIC()` / `select_chain_by_DIC()` | DIC computation and best-chain selection |
 | `compute_Rhat()` / `plot_Rhat_curve()` | Gelman-Rubin convergence diagnostics |
 | `resolve_label_switch()` / `align_estimates_to_truth()` | Attribute label-switching utilities |
@@ -151,3 +151,4 @@ GPL (>= 2)
 ## Repository
 
 https://github.com/K-S666/AHM
+

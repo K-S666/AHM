@@ -1,4 +1,4 @@
-#' Summarize AHMQ posterior estimates
+#' Summarize posterior estimates
 #'
 #' Creates a compact, human-readable summary of posterior point estimates,
 #' convergence diagnostics, and model fit measures returned by
@@ -9,7 +9,7 @@
 #' @param object Output from \code{\link{Est_fun}}.
 #' @param digits Number of digits used in printed numeric summaries.
 #' @param rhat_cutoff Threshold used to flag convergence in the summary table.
-#' @return An object of class \code{"AHMQ_summary"} with model-fit,
+#' @return An object of class \code{"est_summary"} with model-fit,
 #'   convergence, and parameter-estimate components. The object is printed
 #'   automatically when returned at the console.
 #' @examples
@@ -18,10 +18,10 @@
 #' fit <- AHMQ(dat$Y, K = dat$K, chain_length = 1000, burn_in = 500,
 #'             chain_num = 2)
 #' est <- Est_fun(fit)
-#' summary_AHMQ(est)
+#' summary_est(est)
 #' }
 #' @export
-summary_AHMQ <- function(object, digits = 3, rhat_cutoff = 1.1)
+summary_est <- function(object, digits = 3, rhat_cutoff = 1.1)
 {
   required <- c("Est_s", "Est_g", "Est_pi", "Est_G",
                 "Est_alpha", "DIC", "DIC_all", "best_chain")
@@ -57,8 +57,7 @@ summary_AHMQ <- function(object, digits = 3, rhat_cutoff = 1.1)
       pi = object$Est_pi,
       G_posterior = object$Est_GG,
       G = object$Est_G,
-      Q = object$Est_Q,
-      Q_fixed = object$Q_fixed,
+      Q = if (isTRUE(object$known_Q)) NULL else object$Est_Q,
       alpha = object$Est_alpha
     ),
     dimensions = list(
@@ -72,12 +71,12 @@ summary_AHMQ <- function(object, digits = 3, rhat_cutoff = 1.1)
     rhat_cutoff = rhat_cutoff,
     cut_value = object$cut_value %||% 0.2
   )
-  class(out) <- "AHMQ_summary"
+  class(out) <- "est_summary"
   out
 }
 
 #' @export
-print.AHMQ_summary <- function(x, ...)
+print.est_summary <- function(x, ...)
 {
   d <- x$digits
   cat(x$model, " posterior summary\n", sep = "")
@@ -115,8 +114,7 @@ print.AHMQ_summary <- function(x, ...)
   cat("\nFinal estimated hierarchy G:\n")
   print(x$estimates$G)
   if (isTRUE(x$known_Q)) {
-    cat("\nKnown Q-matrix:\n")
-    print(x$estimates$Q_fixed)
+    cat("\nQ-matrix was supplied as known and is not reported as an estimate.\n")
   } else {
     cat("\nFinal estimated structured Q-matrix:\n")
     print(x$estimates$Q)
@@ -128,3 +126,5 @@ print.AHMQ_summary <- function(x, ...)
 {
   if (is.null(x)) y else x
 }
+
+

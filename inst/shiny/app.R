@@ -512,7 +512,7 @@ server <- function(input, output, session)
         verbose = FALSE
       )
       est$runtime <- runtime["elapsed"]
-      summ <- AHM::summary_AHMQ(est)
+      summ <- AHM::summary_est(est)
       sim_summ <- NULL
       if (rv$data$source == "simulation") {
         with_shiny_progress$set(message = "Computing simulation recovery metrics", value = 2)
@@ -735,4 +735,5 @@ server <- function(input, output, session)
 }
 
 shiny::shinyApp(ui, server)
+
 

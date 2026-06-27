@@ -47,7 +47,7 @@ aligned estimate object returned as \code{aligned_estimates}; set
 \item{verbose}{If \code{TRUE}, print the true-label matching permutation.}
 }
 \value{
-An object of class \code{"AHMQ_simulation_summary"} containing the
+An object of class \code{"simulation_summary"} containing the
   truth-aligned estimates, item-parameter bias summaries, AAR/PAR, G/Q
   recovery metrics, Rhat table, and label-alignment metadata.
 }
@@ -61,6 +61,6 @@ and \code{pi}. This avoids treating equivalent label permutations, such as
 }
 \details{
 This function is intended for simulated data. For real data summaries use
-\code{\link{summary_AHMQ}}, because no true \code{Q}, \code{G}, or
+\code{\link{summary_est}}, because no true \code{Q}, \code{G}, or
 \code{alpha} is available for real data label alignment.
 }
