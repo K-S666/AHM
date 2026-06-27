@@ -4,3 +4,7 @@
 ^r_lib_test$
 ^AHM\.Rcheck$
 ^AHM_.*\.tar\.gz$
+^\.git$
+^AHM_check_.*$
+^.*\.Rcheck$
+

@@ -1,4 +1,4 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 

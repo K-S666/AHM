@@ -50,18 +50,7 @@ read_uploaded_matrix <- function(file, header = TRUE, drop_first_col = FALSE,
 
 make_G_preset <- function(type, K)
 {
-  G <- matrix(0, K, K)
-  if (type == "linear" && K > 1L) {
-    for (k in seq_len(K - 1L)) G[k, k + 1L] <- 1
-  } else if (type == "diamond" && K >= 4L) {
-    G[1L, 2L] <- 1
-    G[1L, 3L] <- 1
-    G[2L, 4L] <- 1
-    G[3L, 4L] <- 1
-  } else if (type == "star" && K > 1L) {
-    G[1L, 2:K] <- 1
-  }
-  G
+  AHM::simu_G(type = type, K = K)
 }
 
 binary_check <- function(x, name)
@@ -107,9 +96,10 @@ ui <- shiny::navbarPage(
           shiny::selectInput(
             "sim_G_type", "True hierarchy G",
             choices = c("No hierarchy" = "none",
-                        "Linear" = "linear",
-                        "Diamond / fork" = "diamond",
-                        "Star" = "star",
+                        "G1 Linear" = "linear",
+                        "G2 Convergent" = "convergent",
+                        "G3 Divergent" = "divergent",
+                        "G4 Unstructured" = "unstructured",
                         "Custom matrix" = "custom"),
             selected = "linear"
           ),
@@ -193,7 +183,9 @@ ui <- shiny::navbarPage(
         shiny::h4("Y preview"),
         shiny::tableOutput("Y_preview"),
         shiny::h4("Q preview"),
-        shiny::tableOutput("Q_preview")
+        shiny::tableOutput("Q_preview"),
+        shiny::h4("True G DAG"),
+        shiny::plotOutput("true_G_plot", height = 320)
       )
     )
   ),
@@ -232,6 +224,7 @@ ui <- shiny::navbarPage(
         shiny::numericInput("b_g0", "b_g0", 1, min = 0.001, step = 0.1),
         shiny::numericInput("p_add", "p_add (add-edge proposal prob.)", 0.5,
                             min = 0.01, max = 0.99, step = 0.05),
+        shiny::checkboxInput("show_progress", "Show per-chain iteration progress", TRUE),
         shiny::numericInput("print_every", "Progress print_every", 1000, min = 1, step = 100),
         shiny::actionButton("run_mcmc", "Run MCMC", class = "btn-primary")
       ),
@@ -295,7 +288,9 @@ ui <- shiny::navbarPage(
     shiny::h4("G recovery"),
     shiny::tableOutput("sim_G_table"),
     shiny::h4("Q recovery"),
-    shiny::tableOutput("sim_Q_table")
+    shiny::tableOutput("sim_Q_table"),
+    shiny::h4("Truth-aligned estimated G DAG"),
+    shiny::plotOutput("sim_G_plot", height = 420)
   ),
   shiny::tabPanel(
     "Export",
@@ -448,6 +443,11 @@ server <- function(input, output, session)
                       xlab = "Item", ylab = "Proportion correct",
                       main = "Item correct proportions")
   })
+  output$true_G_plot <- shiny::renderPlot({
+    shiny::req(rv$truth)
+    AHM::plot_G_graph(rv$truth$G, type = "graph", labels = seq_len(rv$truth$K),
+                      main = "True hierarchy G")
+  })
 
   shiny::observeEvent(input$run_mcmc, {
     shiny::req(rv$data)
@@ -482,7 +482,7 @@ server <- function(input, output, session)
           p_add = input$p_add,
           parallel = isTRUE(input$parallel),
           n_cores = as.integer(input$n_cores),
-          progress = TRUE,
+          progress = isTRUE(input$show_progress),
           print_every = as.integer(input$print_every)
         )
       } else {
@@ -498,7 +498,7 @@ server <- function(input, output, session)
           p_add = input$p_add,
           parallel = isTRUE(input$parallel),
           n_cores = as.integer(input$n_cores),
-          progress = TRUE,
+          progress = isTRUE(input$show_progress),
           print_every = as.integer(input$print_every)
         )
       }
@@ -679,6 +679,13 @@ server <- function(input, output, session)
     out[num_cols] <- lapply(out[num_cols], round, digits = 3)
     out
   })
+  output$sim_G_plot <- shiny::renderPlot({
+    shiny::req(rv$sim_summary)
+    AHM::plot_G_graph(rv$sim_summary, type = "graph",
+                      cut_value = input$cut_value,
+                      labels = seq_len(nrow(rv$sim_summary$aligned_estimates$Est_G)),
+                      main = "Truth-aligned estimated hierarchy G")
+  })
 
   output$download_fit <- shiny::downloadHandler(
     filename = function() "AHM_fit.rds",
@@ -728,3 +735,4 @@ server <- function(input, output, session)
 }
 
 shiny::shinyApp(ui, server)
+

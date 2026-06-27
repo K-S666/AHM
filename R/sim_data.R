@@ -8,6 +8,7 @@
 #' @param alpha Binary attribute vector of length \code{K}.
 #' @param Q Binary Q-matrix with dimension \eqn{J \times K}.
 #' @return A binary vector of length \code{J}.
+#' @noRd
 eta_onesubject_dina <- function(alpha, Q)
 {
   J <- nrow(Q)
@@ -139,6 +140,57 @@ ahmq_reduce_alpha <- function(alpha, G)
   space$reduced_alpha[codes + 1L, , drop = FALSE]
 }
 
+#' Generate common attribute hierarchy structures
+#'
+#' Returns binary adjacency matrices for the four hierarchy structures used in
+#' the simulation design. Matrix entries follow the convention
+#' \code{G[prerequisite, target] = 1}; for example, \code{G[1, 2] = 1}
+#' represents \code{A1 -> A2}. The named G1--G4 presets are defined for
+#' \code{K = 4} attributes.
+#'
+#' @param type Hierarchy type. \code{"linear"} is G1
+#'   (A1 -> A2 -> A3 -> A4); \code{"convergent"} is G2
+#'   (A1 -> A2, A1 -> A3, A2 -> A4, A3 -> A4); \code{"divergent"}
+#'   is G3 (A1 -> A2, A1 -> A3, A1 -> A4); \code{"unstructured"} is G4
+#'   (A1 -> A2, A1 -> A3, A3 -> A4); and \code{"none"} has no edges.
+#' @param K Number of attributes. The G1--G4 presets require \code{K = 4};
+#'   \code{"none"} is available for any positive \code{K}.
+#' @return A binary \eqn{K \times K} adjacency matrix.
+#' @export
+simu_G <- function(type = c("linear", "convergent", "divergent", "unstructured", "none"),
+                   K = 4L)
+{
+  type <- match.arg(type)
+  K <- as.integer(K)
+  if (length(K) != 1L || is.na(K) || K < 1L) {
+    stop("K must be a positive integer.", call. = FALSE)
+  }
+  if (type != "none" && K != 4L) {
+    stop("The G1--G4 hierarchy presets are defined for K = 4.", call. = FALSE)
+  }
+
+  G <- matrix(0, K, K)
+  if (type == "linear") {
+    G[1L, 2L] <- 1
+    G[2L, 3L] <- 1
+    G[3L, 4L] <- 1
+  } else if (type == "convergent") {
+    G[1L, 2L] <- 1
+    G[1L, 3L] <- 1
+    G[2L, 4L] <- 1
+    G[3L, 4L] <- 1
+  } else if (type == "divergent") {
+    G[1L, 2L] <- 1
+    G[1L, 3L] <- 1
+    G[1L, 4L] <- 1
+  } else if (type == "unstructured") {
+    G[1L, 2L] <- 1
+    G[1L, 3L] <- 1
+    G[3L, 4L] <- 1
+  }
+  rownames(G) <- colnames(G) <- paste0("A", seq_len(K))
+  G
+}
 #' Simulate attribute profiles under an attribute hierarchy
 #'
 #' Generates an examinee-by-attribute matrix under a fixed hierarchy. The
@@ -463,3 +515,7 @@ simulate_ahmq_data <- function(N, J, K,
        admissible_alpha = admissible,
        alpha_distribution = alpha_distribution)
 }
+
+
+
+

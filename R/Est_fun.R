@@ -5,6 +5,7 @@
 #' @param chain_length Total stored iterations; \code{NULL} means infer from data.
 #' @return List with \code{post_idx}, \code{sample_size}, \code{burn_in},
 #'   \code{chain_length}, and dimensions \code{Y}, \code{N}, \code{J}, \code{K}, \code{L}.
+#' @noRd
 ahmq_post_idx <- function(result, burn_in = NULL, chain_length = NULL)
 {
   cs <- result[[1]]$chain_sample
@@ -54,6 +55,7 @@ ahmq_post_idx <- function(result, burn_in = NULL, chain_length = NULL)
 #' @return List with \code{best_chain}, vector \code{DIC}, scalar
 #'   \code{DIC_value}, posterior means \code{s}, \code{g}, and arrays
 #'   \code{Q_sample}, \code{G_sample}, \code{alpha_sample}, \code{pi_sample}.
+#' @export
 select_chain_by_DIC <- function(result, post_idx, sample_size)
 {
   Y <- result[[1]]$data$Y
@@ -237,6 +239,7 @@ compute_Rhat <- function(result,
 #' @param J,N,K Dimensions.
 #' @return List with binarized \code{Q}, \code{G}, \code{alpha}, \code{pi},
 #'   continuous \code{GG}, and restricted \code{Est_Q}.
+#' @noRd
 binarize_aligned_samples <- function(aligned, s, g, cut_value, J, N, K)
 {
   Q_re_est <- aligned$Q
@@ -383,3 +386,6 @@ Est_fun <- function(result,
   }
   out
 }
+
+
+

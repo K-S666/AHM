@@ -1,8 +1,7 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
 arma::mat AHM_alpha_update(arma::mat y,arma::vec s,arma:: vec g,arma::mat Q,arma::mat G,
                     arma::mat alpha_all,arma::vec pi0,int N,int J,int K,int L)
 {
@@ -44,7 +43,6 @@ arma::mat AHM_alpha_update(arma::mat y,arma::vec s,arma:: vec g,arma::mat Q,arma
   return alpha_new;
 }
 
-// [[Rcpp::export]]
 arma::vec rDirichlet(const arma::vec& deltas){
   unsigned int C = deltas.n_elem;
   arma::vec Xgamma(C);
@@ -56,7 +54,6 @@ arma::vec rDirichlet(const arma::vec& deltas){
   return Xgamma/sum(Xgamma);
 }
 
-// [[Rcpp::export]]
 Rcpp::List AHM_alpha_pi_update(arma::mat y,arma:: vec s,arma:: vec g,arma::mat Q,arma::mat G,
                         arma::mat alpha_all,arma::vec pi0,arma::vec delta0,int N,int J,int K,int L)
 {
@@ -112,5 +109,6 @@ Rcpp::List AHM_alpha_pi_update(arma::mat y,arma:: vec s,arma:: vec g,arma::mat Q
                             Rcpp::Named("alpha_class") = alpha_class,
                             Rcpp::Named("alpha_current_possible_index")=alpha_current_possible_index);
 }
+
 
 

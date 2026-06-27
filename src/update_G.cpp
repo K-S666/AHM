@@ -1,8 +1,7 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
 Rcpp::List add_path_sample1(arma::mat R,arma::mat G,int K)// sample an added edge
 {
   arma::mat G_new=G;
@@ -24,7 +23,6 @@ Rcpp::List add_path_sample1(arma::mat R,arma::mat G,int K)// sample an added edg
 }
 
 
-// [[Rcpp::export]]
 Rcpp::List reduce_path_sample1(arma::mat G,int K)// sample an removed edge
 {
   arma::uvec index=arma::find(G == 1);
@@ -119,7 +117,6 @@ double AHM_G_acceptance_prob(arma::mat y,arma::vec s,arma::vec g,arma::vec pi0,a
   return std::exp(log_accept);
 }
 
-// [[Rcpp::export]]
 arma::mat update_G(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma::mat alpha_all,arma::mat Q,arma::mat G,
                       arma::mat R,int N,int J,int K,int L,double p_add,arma::vec pi,arma::vec delta0,arma::mat G_new,
                       double prob_edge,int action)
@@ -167,7 +164,6 @@ arma::mat update_G(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma::mat
   return G_new;
 }
 
-// [[Rcpp::export]]
 arma::mat AHM_G_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma::mat alpha_all,arma::mat Q,arma::mat G,
                 arma::mat R,int N,int J,int K,int L,double p_add,arma::vec pi0,arma::vec delta0)
 {
@@ -197,3 +193,4 @@ arma::mat AHM_G_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma:
 
   return G_new;
 }  
+

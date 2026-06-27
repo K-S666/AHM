@@ -82,3 +82,4 @@ Rcpp::List AHM_fixedQ(arma::mat Y,
     Rcpp::Named("G") = GG
   );
 }
+

@@ -1,4 +1,4 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
@@ -65,6 +65,7 @@ Rcpp::List AHM_Q(arma::mat Y,int K,int N1=128,int chain_length=20000,int burn_in
   return Rcpp::List::create(Rcpp::Named("alpha") = AA,Rcpp::Named("s") = SLIP,Rcpp::Named("g") = GUESS,
                             Rcpp::Named("pi") = PIS,Rcpp::Named("Q") = QQ,Rcpp::Named("G") = GG);
 }
+
 
 
 

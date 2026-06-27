@@ -209,7 +209,15 @@ plot_G_graph <- function(G,
 {
   type <- match.arg(type)
 
-  if (is.list(G) && all(c("Est_G", "Est_GG") %in% names(G))) {
+  if (inherits(G, "AHMQ_simulation_summary")) {
+    if (is.null(G_posterior)) {
+      G_posterior <- G$aligned_estimates$Est_GG
+    }
+    if (is.null(cut_value) && !is.null(G$cut_value)) {
+      cut_value <- G$cut_value
+    }
+    G <- G$aligned_estimates$Est_G
+  } else if (is.list(G) && all(c("Est_G", "Est_GG") %in% names(G))) {
     if (is.null(G_posterior)) {
       G_posterior <- G$Est_GG
     }
@@ -252,41 +260,55 @@ plot_G_graph <- function(G,
     labels <- paste0("A", seq_len(K))
   }
 
-  roots <- which(colSums(G_binary) == 0)
-  if (length(roots) == 0L) {
-    roots <- seq_len(K)
-  }
+  dag_layout <- function(G_binary) {
+    if (K == 4L && identical(unname(G_binary), unname(simu_G("linear")))) {
+      return(data.frame(x = c(0, 0, 0, 0), y = c(3, 2, 1, 0), depth = c(0, 1, 2, 3)))
+    }
+    if (K == 4L && identical(unname(G_binary), unname(simu_G("convergent")))) {
+      return(data.frame(x = c(0, -1, 1, 0), y = c(2, 1, 1, 0), depth = c(0, 1, 1, 2)))
+    }
+    if (K == 4L && identical(unname(G_binary), unname(simu_G("divergent")))) {
+      return(data.frame(x = c(0, -1, 0, 1), y = c(1, 0, 0, 0), depth = c(0, 1, 1, 1)))
+    }
+    if (K == 4L && identical(unname(G_binary), unname(simu_G("unstructured")))) {
+      return(data.frame(x = c(0, -1, 1, 1), y = c(2, 1, 1, 0), depth = c(0, 1, 1, 2)))
+    }
 
-  depth <- rep(NA_integer_, K)
-  depth[roots] <- 0L
-  changed <- TRUE
-  while (changed) {
-    changed <- FALSE
-    for (parent in seq_len(K)) {
-      if (is.na(depth[parent])) {
-        next
-      }
-      children <- which(G_binary[parent, ] == 1)
-      for (child in children) {
-        new_depth <- depth[parent] + 1L
-        if (is.na(depth[child]) || new_depth > depth[child]) {
-          depth[child] <- new_depth
-          changed <- TRUE
+    roots <- which(colSums(G_binary) == 0)
+    if (length(roots) == 0L) {
+      roots <- seq_len(K)
+    }
+    depth <- rep(NA_integer_, K)
+    depth[roots] <- 0L
+    changed <- TRUE
+    while (changed) {
+      changed <- FALSE
+      for (parent in seq_len(K)) {
+        if (is.na(depth[parent])) next
+        for (child in which(G_binary[parent, ] == 1)) {
+          new_depth <- depth[parent] + 1L
+          if (is.na(depth[child]) || new_depth > depth[child]) {
+            depth[child] <- new_depth
+            changed <- TRUE
+          }
         }
       }
     }
-  }
-  depth[is.na(depth)] <- 0L
+    depth[is.na(depth)] <- 0L
 
-  x <- depth
-  y <- numeric(K)
-  for (d in sort(unique(depth))) {
-    idx <- which(depth == d)
-    y[idx] <- rev(seq_along(idx)) - (length(idx) + 1) / 2
+    x <- numeric(K)
+    y <- -depth
+    for (d in sort(unique(depth))) {
+      idx <- which(depth == d)
+      x[idx] <- seq(-(length(idx) - 1) / 2, (length(idx) - 1) / 2, length.out = length(idx))
+    }
+    data.frame(x = x, y = y, depth = depth)
   }
-  if (length(unique(y)) == 1L) {
-    y <- y + seq_len(K) * 0
-  }
+
+  layout <- dag_layout(G_binary)
+  x <- layout$x
+  y <- layout$y
+  depth <- layout$depth
 
   if (!is.null(file)) {
     grDevices::png(file, width = width, height = height, res = res)
@@ -312,11 +334,19 @@ plot_G_graph <- function(G,
       for (i in seq_len(nrow(edge_index))) {
         parent <- edge_index[i, 1L]
         child <- edge_index[i, 2L]
-        graphics::arrows(x[parent], y[parent],
-                         x[child], y[child],
-                         length = 0.1,
-                         lwd = 1.5,
-                         col = edge_col)
+        dx <- x[child] - x[parent]
+        dy <- y[child] - y[parent]
+        edge_len <- sqrt(dx^2 + dy^2)
+        radius <- 0.18
+        if (edge_len > 0) {
+          graphics::arrows(x[parent] + radius * dx / edge_len,
+                           y[parent] + radius * dy / edge_len,
+                           x[child] - radius * dx / edge_len,
+                           y[child] - radius * dy / edge_len,
+                           length = 0.12,
+                           lwd = 1.5,
+                           col = edge_col)
+        }
       }
     }
 
@@ -551,3 +581,6 @@ traceplot_AHMQ <- function(result,
   }
   invisible(pages)
 }
+
+
+

@@ -4,6 +4,8 @@
 #include <RcppArmadillo.h>
 #include <rgen.h>
 #include <algorithm>
+#include <R_ext/Utils.h>
+#include <iomanip>
 
 arma::vec inv_bijectionvector(unsigned int K, double CL);
 double twoToten(arma::ivec x);
@@ -83,3 +85,4 @@ void AHM_update_fixQ(arma::mat Y, arma::mat& alpha,
                      arma::vec delta0, arma::mat eta);
 
 #endif
+

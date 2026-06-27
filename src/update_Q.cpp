@@ -1,8 +1,7 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
 arma::mat AHM_Q_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma::mat Q_all,
                 arma::mat Q,int N,int J,int K,arma::vec alpha_current_possible_index,
                 arma::mat eta,arma::vec alpha_code)
@@ -51,5 +50,6 @@ arma::mat AHM_Q_update(arma::mat y,arma::vec s,arma::vec g,arma::mat alpha,arma:
   }
   return Q_new;
 }
+
 
 

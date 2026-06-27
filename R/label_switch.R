@@ -75,6 +75,7 @@ ahmq_permute_matrix <- function(x, perm)
 #' @param verbose If \code{TRUE}, print iteration progress (default \code{TRUE}).
 #' @return A list with aligned draws: \code{Q}, \code{G}, \code{alpha},
 #'   \code{pi}.
+#' @export
 resolve_label_switch <- function(Q_sample,
                                  G_sample,
                                  alpha_sample,
@@ -345,3 +346,5 @@ align_estimates_to_truth <- function(est,
 
   est
 }
+
+

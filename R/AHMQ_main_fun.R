@@ -37,8 +37,11 @@ validate_p_add <- function(p_add)
 #' @param p_add Proposal probability for adding an edge in the hierarchy
 #'   \code{G} update; removing an edge is proposed with probability
 #'   \code{1 - p_add} (default 0.5).
+#' @param progress Whether to print per-chain iteration progress messages.
+#' @param print_every Print progress every this many MCMC iterations.
 #' @return A list with posterior draws: \code{alpha}, \code{s}, \code{g},
 #'   \code{pi}, \code{Q}, and \code{G}.
+#' @noRd
 AHMQ_single <- function(Y, K,
                         N1 = NULL,
                         chain_length = 20000L,
@@ -96,6 +99,8 @@ AHMQ_single <- function(Y, K,
 #' @param p_add Proposal probability for adding an edge in the hierarchy
 #'   \code{G} update; removing an edge is proposed with probability
 #'   \code{1 - p_add} (default 0.5).
+#' @param progress Whether to print per-chain iteration progress messages.
+#' @param print_every Print progress every this many MCMC iterations.
 #' @param parallel If \code{TRUE}, run independent chains in parallel with
 #'   \code{parallel::mclapply} on Unix-like systems or a PSOCK cluster on
 #'   Windows.
@@ -252,8 +257,11 @@ AHMQ <- function(Y, K,
 #' @param p_add Proposal probability for adding an edge in the hierarchy
 #'   \code{G} update; removing an edge is proposed with probability
 #'   \code{1 - p_add} (default 0.5).
+#' @param progress Whether to print per-chain iteration progress messages.
+#' @param print_every Print progress every this many MCMC iterations.
 #' @return A list with posterior draws \code{alpha}, \code{s}, \code{g},
 #'   \code{pi}, and \code{G}. Q is fixed and is not sampled.
+#' @noRd
 AHM_single <- function(Y, Q,
                        N1 = NULL,
                        chain_length = 20000L,
@@ -316,6 +324,8 @@ AHM_single <- function(Y, Q,
 #' @param p_add Proposal probability for adding an edge in the hierarchy
 #'   \code{G} update; removing an edge is proposed with probability
 #'   \code{1 - p_add} (default 0.5).
+#' @param progress Whether to print per-chain iteration progress messages.
+#' @param print_every Print progress every this many MCMC iterations.
 #' @param parallel If \code{TRUE}, run chains in parallel.
 #' @param n_cores Number of worker processes used when \code{parallel = TRUE}.
 #' @return A list of chain outputs with model settings and posterior draws.
@@ -455,3 +465,4 @@ AHM <- function(Y, Q,
 
   result
 }
+

@@ -1,8 +1,7 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
 void AHM_update(arma::mat Y,arma::mat& alpha,arma:: vec& s,arma:: vec& g,arma::mat& Q,arma::mat& G,arma::vec& pi,
                        double p_add,arma::mat alpha_all,arma::mat Q_all,int N,int J,int K,int L,int N1,
                        double a_s0,double a_g0,double b_s0,double b_g0,arma::vec delta0,arma::mat eta)
@@ -36,7 +35,6 @@ void AHM_update(arma::mat Y,arma::mat& alpha,arma:: vec& s,arma:: vec& g,arma::m
 }
 
 
-// [[Rcpp::export]]
 void AHM_update_fixQ(arma::mat Y,arma::mat& alpha,arma:: vec& s,arma:: vec& g,arma::mat& Q,arma::mat& G,arma::vec& pi,
                                double p_add,arma::mat alpha_all,arma::mat Q_all,int N,int J,int K,int L,int N1,
                                double a_s0,double a_g0,double b_s0,double b_g0,arma::vec delta0,arma::mat eta)
@@ -64,4 +62,5 @@ void AHM_update_fixQ(arma::mat Y,arma::mat& alpha,arma:: vec& s,arma:: vec& g,ar
   G = AHM_G_update(y,s,g,alpha_mini,alpha_all,Q,G,R,N1,J,K,L,p_add,pi,delta0);
   
 }
+
 
