@@ -26,6 +26,12 @@ Install **remotes** or **devtools** once if needed:
 install.packages("remotes")
 ```
 
+or
+
+```r
+install.packages("devtools")
+```
+
 Then run:
 
 ```r
@@ -72,11 +78,10 @@ summary_AHMQ(est)
 ### Known Q-matrix (`AHM`)
 
 ```r
-dat <- simulate_ahmq_data(N = 100, J = 12, K = 4, G = simu_G("linear"), seed = 1)
-
 fit <- AHM(
-  Y = dat$Y,
-  Q = dat$Q,
+  Y = ecpe$Y,
+  Q = ecpe$Q,
+  N1 = 1024,
   chain_length = 20000,
   burn_in = 10000,
   chain_num = 4
