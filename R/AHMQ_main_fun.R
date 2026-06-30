@@ -18,6 +18,8 @@ validate_p_add <- function(p_add)
   as.numeric(p_add)
 }
 
+.ahm_progress_state <- new.env(parent = emptyenv())
+.ahm_progress_state$lines <- 0L
 ahm_read_progress <- function(progress_dir, chain_num)
 {
   current <- integer(chain_num)
@@ -36,12 +38,42 @@ ahm_read_progress <- function(progress_dir, chain_num)
   current
 }
 
+ahm_supports_ansi_progress <- function()
+{
+  isTRUE(interactive()) &&
+    (nzchar(Sys.getenv("RSTUDIO")) || nzchar(Sys.getenv("TERM"))) &&
+    identical(sink.number(type = "output"), 0L)
+}
+
+ahm_clear_previous_progress <- function()
+{
+  n <- .ahm_progress_state$lines
+  if (is.null(n) || n <= 0L || !ahm_supports_ansi_progress()) {
+    return(invisible(FALSE))
+  }
+  for (i in seq_len(n)) {
+    cat("\033[1A\033[2K")
+  }
+  invisible(TRUE)
+}
+
 ahm_print_progress <- function(model, current, total, final = FALSE)
 {
   pct <- pmin(100, 100 * current / total)
-  cat(sprintf("\n%s chain progress%s:\n", model, if (final) " (final)" else ""))
-  for (i in seq_along(current)) {
-    cat(sprintf("chain %d: %d/%d, %.1f%%\n", i, current[i], total, pct[i]))
+  lines <- c(
+    sprintf("%s chain progress%s:", model, if (final) " (final)" else ""),
+    sprintf("chain %d: %d/%d, %.1f%%", seq_along(current), current, total, pct)
+  )
+
+  if (ahm_supports_ansi_progress()) {
+    ahm_clear_previous_progress()
+    cat(paste0(lines, collapse = "\n"), "\n", sep = "")
+    .ahm_progress_state$lines <- length(lines)
+    if (isTRUE(final)) {
+      .ahm_progress_state$lines <- 0L
+    }
+  } else {
+    cat("\n", paste0(lines, collapse = "\n"), "\n", sep = "")
   }
   utils::flush.console()
 }
@@ -56,6 +88,7 @@ ahm_parallel_lapply_progress <- function(cl,
                                          poll_interval = 1,
                                          progress_callback = NULL)
 {
+  .ahm_progress_state$lines <- 0L
   n <- length(X)
   result <- vector("list", n)
   submitted <- completed <- 0L
