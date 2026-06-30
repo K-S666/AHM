@@ -15,10 +15,5 @@ interface.
 \author{
 \strong{Maintainer}: Xue Wang \email{wangx625@nenu.edu.cn}
 
-Authors:
-\itemize{
-  \item Xue Wang \email{wangx625@nenu.edu.cn}
-}
-
 }
 \keyword{internal}

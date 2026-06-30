@@ -55,6 +55,9 @@ summary_est <- function(object, digits = 3, rhat_cutoff = 1.1)
       slip = object$Est_s,
       guess = object$Est_g,
       pi = object$Est_pi,
+      slip_sd = object$Est_s_sd,
+      guess_sd = object$Est_g_sd,
+      pi_sd = object$Est_pi_sd,
       G_posterior = object$Est_GG,
       G = object$Est_G,
       Q = if (isTRUE(object$known_Q)) NULL else object$Est_Q,
@@ -89,8 +92,7 @@ print.est_summary <- function(x, ...)
   cat("Best chain by DIC:", x$fit$best_chain,
       " DIC:", round(x$fit$DIC, d), "\n")
   if (!is.null(x$fit$runtime)) {
-    cat("Runtime:", round(as.numeric(x$fit$runtime, units = "secs"), d),
-        "seconds\n")
+    cat("Runtime:", round(as.numeric(x$fit$runtime), d), "seconds\n")
   }
 
   cat("\nDIC by chain:\n")
@@ -105,9 +107,25 @@ print.est_summary <- function(x, ...)
   }
 
   cat("\nSlip estimates:\n")
-  print(round(x$estimates$slip, d))
+  if (!is.null(x$estimates$slip_sd)) {
+    print(round(data.frame(mean = x$estimates$slip,
+                           SD = x$estimates$slip_sd), d))
+  } else {
+    print(round(x$estimates$slip, d))
+  }
   cat("\nGuess estimates:\n")
-  print(round(x$estimates$guess, d))
+  if (!is.null(x$estimates$guess_sd)) {
+    print(round(data.frame(mean = x$estimates$guess,
+                           SD = x$estimates$guess_sd), d))
+  } else {
+    print(round(x$estimates$guess, d))
+  }
+  if (!is.null(x$estimates$pi_sd)) {
+    cat("\nClass probability estimates pi:\n")
+    print(round(data.frame(mean = x$estimates$pi,
+                           SD = x$estimates$pi_sd), d))
+  }
+
   cat("\nPosterior mean of G:\n")
   print(round(x$estimates$G_posterior, d))
   cat("\nG cut_value:", x$cut_value, "\n")
@@ -126,5 +144,6 @@ print.est_summary <- function(x, ...)
 {
   if (is.null(x)) y else x
 }
+
 
 

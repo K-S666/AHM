@@ -96,6 +96,8 @@ select_chain_by_DIC <- function(result, post_idx, sample_size)
     DIC_value = DIC[best_chain],
     s = apply(cs$s[, post_idx], 1, mean),
     g = apply(cs$g[, post_idx], 1, mean),
+    s_sd = apply(cs$s[, post_idx, drop = FALSE], 1, stats::sd),
+    g_sd = apply(cs$g[, post_idx, drop = FALSE], 1, stats::sd),
     G_sample = cs$G[, , post_idx],
     alpha_sample = cs$alpha[, , post_idx],
     pi_sample = cs$pi[, post_idx]
@@ -264,12 +266,14 @@ binarize_aligned_samples <- function(aligned, s, g, cut_value, J, N, K)
 
   pi <- apply(pi_re_est, 1, mean)
   pi <- pi / sum(pi)
+  pi_sd <- apply(pi_re_est, 1, stats::sd)
 
   G <- Transitive(G, K)
   R <- Reachability(G, K)
   Est_Q <- Restricted_Q(Q, R, J, K)$Q_restrict
 
-  list(Q = Q, G = G, alpha = alpha, pi = pi, GG = GG, Est_Q = Est_Q)
+  list(Q = Q, G = G, alpha = alpha, pi = pi, pi_sd = pi_sd,
+       GG = GG, Est_Q = Est_Q)
 }
 
 binarize_fixedQ_samples <- function(G_sample,
@@ -297,8 +301,9 @@ binarize_fixedQ_samples <- function(G_sample,
 
   pi <- apply(pi_sample, 1, mean)
   pi <- pi / sum(pi)
+  pi_sd <- apply(pi_sample, 1, stats::sd)
 
-  list(s = s, g = g, pi = pi, G = G, GG = GG,
+  list(s = s, g = g, pi = pi, pi_sd = pi_sd, G = G, GG = GG,
        alpha = alpha, Q_fixed = Q_fixed)
 }
 
@@ -323,10 +328,12 @@ binarize_fixedQ_samples <- function(G_sample,
 #' @param return_samples If \code{TRUE}, include the DIC-selected, relabeled
 #'   posterior samples in the returned object.
 #' @param verbose If \code{TRUE}, print label-switch progress.
-#' @return A list with \code{Est_s}, \code{Est_g}, \code{Est_pi}, \code{Est_G},
-#'   \code{Est_Q}, \code{Est_alpha}, \code{Est_GG}, \code{DIC},
-#'   \code{DIC_all}, \code{best_chain}, and optionally \code{Rhat} and
-#'   \code{posterior_samples}.
+#' @return A list with posterior means \code{Est_s}, \code{Est_g},
+#'   \code{Est_pi}, posterior standard deviations \code{Est_s_sd},
+#'   \code{Est_g_sd}, \code{Est_pi_sd}, estimated \code{Est_G},
+#'   \code{Est_Q}, \code{Est_alpha}, \code{Est_GG}, model-fit values
+#'   \code{DIC}, \code{DIC_all}, \code{best_chain}, \code{runtime}, and
+#'   optionally \code{Rhat} and \code{posterior_samples}.
 #' @seealso \code{\link{select_chain_by_DIC}}, \code{\link{resolve_label_switch}}
 #' @export
 Est_fun <- function(result,
@@ -362,9 +369,14 @@ Est_fun <- function(result,
     )
   }
 
+  runtime <- attr(result, 'runtime', exact = TRUE) %||% result[[1]]$data$runtime
+
   out <- list(Est_s = sel$s,
               Est_g = sel$g,
               Est_pi = est$pi,
+              Est_s_sd = sel$s_sd,
+              Est_g_sd = sel$g_sd,
+              Est_pi_sd = est$pi_sd,
               Est_G = est$G,
               Est_Q = if (known_Q) NULL else est$Est_Q,
               Q_fixed = if (known_Q) est$Q_fixed else NULL,
@@ -376,7 +388,8 @@ Est_fun <- function(result,
               DIC = sel$DIC_value,
               DIC_all = sel$DIC,
               best_chain = sel$best_chain,
-              Rhat = rhat)
+              Rhat = rhat,
+              runtime = runtime)
   if (return_samples) {
     out$posterior_samples <- if (known_Q) {
       list(G = sel$G_sample, alpha = sel$alpha_sample, pi = sel$pi_sample)
@@ -386,6 +399,10 @@ Est_fun <- function(result,
   }
   out
 }
+
+
+
+
 
 
 

@@ -40,10 +40,12 @@ posterior samples in the returned object.}
 \item{verbose}{If \code{TRUE}, print label-switch progress.}
 }
 \value{
-A list with \code{Est_s}, \code{Est_g}, \code{Est_pi}, \code{Est_G},
-  \code{Est_Q}, \code{Est_alpha}, \code{Est_GG}, \code{DIC},
-  \code{DIC_all}, \code{best_chain}, and optionally \code{Rhat} and
-  \code{posterior_samples}.
+A list with posterior means \code{Est_s}, \code{Est_g},
+  \code{Est_pi}, posterior standard deviations \code{Est_s_sd},
+  \code{Est_g_sd}, \code{Est_pi_sd}, estimated \code{Est_G},
+  \code{Est_Q}, \code{Est_alpha}, \code{Est_GG}, model-fit values
+  \code{DIC}, \code{DIC_all}, \code{best_chain}, \code{runtime}, and
+  optionally \code{Rhat} and \code{posterior_samples}.
 }
 \description{
 Post-processes the list returned by \code{AHMQ}: selects the chain with

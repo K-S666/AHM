@@ -1,4 +1,7 @@
 #include "ahm_common.h"
+#include <cstdlib>
+#include <fstream>
+#include <string>
 
 using namespace Rcpp;
 
@@ -24,6 +27,11 @@ Rcpp::List AHM_fixedQ(arma::mat Y,
   const int D = L - 1;
   const int T = chain_length - burn_in;
   const int progress_every = std::max(1, print_every);
+  const char* progress_dir_env = std::getenv("AHM_PROGRESS_DIR");
+  std::string progress_file;
+  if (progress_dir_env != nullptr && std::string(progress_dir_env).size() > 0) {
+    progress_file = std::string(progress_dir_env) + "/chain_" + std::to_string(chain_id) + ".txt";
+  }
 
   arma::cube GG(K, K, T);
   arma::cube AA(N, K, T);
@@ -69,8 +77,15 @@ Rcpp::List AHM_fixedQ(arma::mat Y,
       Rcpp::checkUserInterrupt();
     }
     if (progress && ((t + 1) == 1 || ((t + 1) % progress_every == 0) || ((t + 1) == chain_length))) {
-      Rcpp::Rcout << "AHM chain " << chain_id << " iteration "
-                  << (t + 1) << "/" << chain_length << "\n";
+      if (progress_file.empty()) {
+        Rcpp::Rcout << "AHM chain " << chain_id << " iteration "
+                    << (t + 1) << "/" << chain_length << "\n";
+      } else {
+        std::ofstream out(progress_file.c_str(), std::ios::trunc);
+        if (out.is_open()) {
+          out << (t + 1) << std::endl;
+        }
+      }
     }
   }
 

@@ -18,6 +18,99 @@ validate_p_add <- function(p_add)
   as.numeric(p_add)
 }
 
+ahm_read_progress <- function(progress_dir, chain_num)
+{
+  current <- integer(chain_num)
+  if (is.null(progress_dir) || !dir.exists(progress_dir)) {
+    return(current)
+  }
+  for (i in seq_len(chain_num)) {
+    f <- file.path(progress_dir, paste0("chain_", i, ".txt"))
+    if (file.exists(f)) {
+      value <- suppressWarnings(as.integer(readLines(f, warn = FALSE, n = 1L)))
+      if (length(value) == 1L && !is.na(value)) {
+        current[i] <- value
+      }
+    }
+  }
+  current
+}
+
+ahm_print_progress <- function(model, current, total, final = FALSE)
+{
+  pct <- pmin(100, 100 * current / total)
+  cat(sprintf("\n%s chain progress%s:\n", model, if (final) " (final)" else ""))
+  for (i in seq_along(current)) {
+    cat(sprintf("chain %d: %d/%d, %.1f%%\n", i, current[i], total, pct[i]))
+  }
+  utils::flush.console()
+}
+
+ahm_parallel_lapply_progress <- function(cl,
+                                         X,
+                                         fun,
+                                         chain_length,
+                                         progress_dir,
+                                         model,
+                                         progress = TRUE,
+                                         poll_interval = 1,
+                                         progress_callback = NULL)
+{
+  n <- length(X)
+  result <- vector("list", n)
+  submitted <- completed <- 0L
+  last_printed <- rep(-1L, n)
+  socklist <- lapply(cl, function(node) node$con)
+
+  submit_one <- function(node_id) {
+    submitted <<- submitted + 1L
+    parallel:::sendCall(cl[[node_id]], fun, list(X[[submitted]]), tag = X[[submitted]])
+  }
+
+  n_start <- min(length(cl), n)
+  for (node_id in seq_len(n_start)) {
+    submit_one(node_id)
+  }
+
+  repeat {
+    ready <- socketSelect(socklist, timeout = poll_interval)
+    current <- ahm_read_progress(progress_dir, n)
+    if (isTRUE(progress) && !identical(current, last_printed)) {
+      ahm_print_progress(model, current, chain_length)
+      if (is.function(progress_callback)) {
+        progress_callback(current, chain_length, model, final = FALSE)
+      }
+      last_printed <- current
+    }
+
+    if (any(ready)) {
+      for (node_id in which(ready)) {
+        value <- parallel:::recvData(cl[[node_id]])
+        completed <- completed + 1L
+        if (!isTRUE(value$success)) {
+          stop(value$value, call. = FALSE)
+        }
+        result[[as.integer(value$tag)]] <- value$value
+        if (submitted < n) {
+          submit_one(node_id)
+        }
+      }
+    }
+    if (completed >= n) {
+      break
+    }
+  }
+
+  current <- pmax(ahm_read_progress(progress_dir, n), chain_length)
+  if (isTRUE(progress)) {
+    ahm_print_progress(model, current, chain_length, final = TRUE)
+    if (is.function(progress_callback)) {
+      progress_callback(current, chain_length, model, final = TRUE)
+    }
+  }
+  result
+}
+
 #' Single-chain DINA estimation with AHM Q-matrix prior
 #'
 #' Runs one MCMC chain via the Rcpp sampler. Initial values for item
@@ -101,6 +194,9 @@ AHMQ_single <- function(Y, K,
 #'   \code{1 - p_add} (default 0.5).
 #' @param progress Whether to print per-chain iteration progress messages.
 #' @param print_every Print progress every this many MCMC iterations.
+#' @param progress_callback Optional function used by interactive front ends.
+#'   When supplied, it is called as \code{progress_callback(current, total,
+#'   model, final)} whenever the main process refreshes per-chain progress.
 #' @param parallel If \code{TRUE}, run independent chains in parallel with
 #'   \code{parallel::mclapply} on Unix-like systems or a PSOCK cluster on
 #'   Windows.
@@ -121,8 +217,10 @@ AHMQ <- function(Y, K,
                  parallel = TRUE,
                  n_cores = min(chain_num, parallel::detectCores(logical = FALSE)),
                  progress = TRUE,
-                 print_every = 1000L)
+                 print_every = 1000L,
+                 progress_callback = NULL)
 {
+  start_time <- proc.time()[['elapsed']]
   Y <- as.matrix(Y)
   storage.mode(Y) <- "double"
   if (!all(Y %in% c(0, 1))) {
@@ -156,7 +254,22 @@ AHMQ <- function(Y, K,
                progress = isTRUE(progress),
                print_every = print_every)
 
+  progress_dir <- NULL
+  if (isTRUE(progress) && isTRUE(parallel) && chain_num > 1L &&
+      .Platform$OS.type == "windows") {
+    progress_dir <- tempfile("AHM_progress_")
+    dir.create(progress_dir, showWarnings = FALSE, recursive = TRUE)
+    for (i in seq_len(chain_num)) {
+      writeLines("0", file.path(progress_dir, paste0("chain_", i, ".txt")))
+    }
+    on.exit(unlink(progress_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  }
+
   run_chain <- function(i) {
+    if (!is.null(progress_dir)) {
+      Sys.setenv(AHM_PROGRESS_DIR = normalizePath(progress_dir, winslash = "/", mustWork = FALSE))
+      on.exit(Sys.unsetenv("AHM_PROGRESS_DIR"), add = TRUE)
+    }
     if (isTRUE(progress)) {
       cat(sprintf("AHMQ chain %d/%d started (N1 = %d, iterations = %d).\n",
                   i, chain_num, N1, chain_length))
@@ -221,11 +334,19 @@ AHMQ <- function(Y, K,
         varlist = c("AHMQ_single", "Y", "K", "N1", "chain_length", "burn_in",
                     "keep_burnin", "a_s0", "a_g0", "b_s0", "b_g0",
                     "p_add", "data", "chain_num", "progress", "print_every",
-                    "default_minibatch_size"),
+                    "default_minibatch_size", "progress_dir", "ahm_read_progress", "ahm_print_progress", "ahm_parallel_lapply_progress"),
         envir = environment()
       )
       parallel::clusterSetRNGStream(cl)
-      result <- parallel::parLapply(cl, seq_len(chain_num), run_chain)
+      result <- if (isTRUE(progress)) {
+        ahm_parallel_lapply_progress(
+          cl, seq_len(chain_num), run_chain, chain_length,
+          progress_dir = progress_dir, model = "AHMQ", progress = TRUE,
+          progress_callback = progress_callback
+        )
+      } else {
+        parallel::parLapply(cl, seq_len(chain_num), run_chain)
+      }
     } else {
       result <- parallel::mclapply(seq_len(chain_num), run_chain,
                                    mc.cores = n_cores)
@@ -234,6 +355,12 @@ AHMQ <- function(Y, K,
     result <- lapply(seq_len(chain_num), run_chain)
   }
 
+  runtime <- proc.time()[['elapsed']] - start_time
+  result <- lapply(result, function(chain) {
+    chain$data$runtime <- runtime
+    chain
+  })
+  attr(result, 'runtime') <- runtime
   result
 }
 
@@ -326,6 +453,9 @@ AHM_single <- function(Y, Q,
 #'   \code{1 - p_add} (default 0.5).
 #' @param progress Whether to print per-chain iteration progress messages.
 #' @param print_every Print progress every this many MCMC iterations.
+#' @param progress_callback Optional function used by interactive front ends.
+#'   When supplied, it is called as \code{progress_callback(current, total,
+#'   model, final)} whenever the main process refreshes per-chain progress.
 #' @param parallel If \code{TRUE}, run chains in parallel.
 #' @param n_cores Number of worker processes used when \code{parallel = TRUE}.
 #' @return A list of chain outputs with model settings and posterior draws.
@@ -342,8 +472,10 @@ AHM <- function(Y, Q,
                 parallel = TRUE,
                 n_cores = min(chain_num, parallel::detectCores(logical = FALSE)),
                 progress = TRUE,
-                print_every = 1000L)
+                print_every = 1000L,
+                progress_callback = NULL)
 {
+  start_time <- proc.time()[['elapsed']]
   Y <- as.matrix(Y)
   Q <- as.matrix(Q)
   storage.mode(Y) <- "double"
@@ -385,7 +517,22 @@ AHM <- function(Y, Q,
                progress = isTRUE(progress),
                print_every = print_every)
 
+  progress_dir <- NULL
+  if (isTRUE(progress) && isTRUE(parallel) && chain_num > 1L &&
+      .Platform$OS.type == "windows") {
+    progress_dir <- tempfile("AHM_progress_")
+    dir.create(progress_dir, showWarnings = FALSE, recursive = TRUE)
+    for (i in seq_len(chain_num)) {
+      writeLines("0", file.path(progress_dir, paste0("chain_", i, ".txt")))
+    }
+    on.exit(unlink(progress_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  }
+
   run_chain <- function(i) {
+    if (!is.null(progress_dir)) {
+      Sys.setenv(AHM_PROGRESS_DIR = normalizePath(progress_dir, winslash = "/", mustWork = FALSE))
+      on.exit(Sys.unsetenv("AHM_PROGRESS_DIR"), add = TRUE)
+    }
     if (isTRUE(progress)) {
       cat(sprintf("AHM chain %d/%d started (N1 = %d, iterations = %d).\n",
                   i, chain_num, N1, chain_length))
@@ -450,11 +597,19 @@ AHM <- function(Y, Q,
         varlist = c("AHM_single", "Y", "Q", "N1", "chain_length", "burn_in",
                     "keep_burnin", "a_s0", "a_g0", "b_s0", "b_g0",
                     "p_add", "data", "chain_num", "progress", "print_every",
-                    "default_minibatch_size"),
+                    "default_minibatch_size", "progress_dir", "ahm_read_progress", "ahm_print_progress", "ahm_parallel_lapply_progress"),
         envir = environment()
       )
       parallel::clusterSetRNGStream(cl)
-      result <- parallel::parLapply(cl, seq_len(chain_num), run_chain)
+      result <- if (isTRUE(progress)) {
+        ahm_parallel_lapply_progress(
+          cl, seq_len(chain_num), run_chain, chain_length,
+          progress_dir = progress_dir, model = "AHM", progress = TRUE,
+          progress_callback = progress_callback
+        )
+      } else {
+        parallel::parLapply(cl, seq_len(chain_num), run_chain)
+      }
     } else {
       result <- parallel::mclapply(seq_len(chain_num), run_chain,
                                    mc.cores = n_cores)
@@ -463,6 +618,14 @@ AHM <- function(Y, Q,
     result <- lapply(seq_len(chain_num), run_chain)
   }
 
+  runtime <- proc.time()[['elapsed']] - start_time
+  result <- lapply(result, function(chain) {
+    chain$data$runtime <- runtime
+    chain
+  })
+  attr(result, 'runtime') <- runtime
   result
 }
+
+
 

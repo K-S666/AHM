@@ -20,7 +20,8 @@ AHMQ(
   parallel = TRUE,
   n_cores = min(chain_num, parallel::detectCores(logical = FALSE)),
   progress = TRUE,
-  print_every = 1000L
+  print_every = 1000L,
+  progress_callback = NULL
 )
 }
 \arguments{
@@ -58,6 +59,10 @@ Windows.}
 \item{progress}{Whether to print per-chain iteration progress messages.}
 
 \item{print_every}{Print progress every this many MCMC iterations.}
+
+\item{progress_callback}{Optional function used by interactive front ends.
+When supplied, it is called as \code{progress_callback(current, total,
+model, final)} whenever the main process refreshes per-chain progress.}
 }
 \value{
 A list of length \code{chain_num}. Each element is a list with

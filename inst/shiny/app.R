@@ -92,7 +92,7 @@ ui <- shiny::navbarPage(
           shiny::h4("Simulation conditions"),
           shiny::numericInput("sim_N", "Sample size N", 500, min = 1, step = 10),
           shiny::numericInput("sim_J", "Number of items J", 20, min = 2, step = 1),
-          shiny::numericInput("sim_K", "Number of attributes K", 4, min = 1, step = 1),
+          shiny::helpText("Number of attributes K is fixed at 4 for simulation examples."),
           shiny::selectInput(
             "sim_G_type", "True hierarchy G",
             choices = c("No hierarchy" = "none",
@@ -324,7 +324,7 @@ server <- function(input, output, session)
 
   shiny::observeEvent(input$prepare_sim, {
     tryCatch({
-      K <- as.integer(input$sim_K)
+      K <- 4L
       G <- if (input$sim_G_type == "custom") {
         parse_matrix_text(input$sim_G_text, nrow = K, ncol = K, name = "Custom G")
       } else {
@@ -465,6 +465,21 @@ server <- function(input, output, session)
       with_shiny_progress <- shiny::Progress$new(session, min = 0, max = 3)
       on.exit(with_shiny_progress$close(), add = TRUE)
       with_shiny_progress$set(message = "Running MCMC", value = 0)
+      shiny_progress_callback <- NULL
+      if (isTRUE(input$show_progress)) {
+        shiny_progress_callback <- function(current, total, model, final = FALSE) {
+          pct <- pmin(100, 100 * current / total)
+          detail <- paste(
+            sprintf("chain %d: %d/%d, %.1f%%", seq_along(current), current, total, pct),
+            collapse = "\n"
+          )
+          with_shiny_progress$set(
+            message = paste(model, "chain progress", if (final) "(final)" else ""),
+            detail = detail,
+            value = mean(pct) / 100
+          )
+        }
+      }
       t0 <- proc.time()
       if (isTRUE(rv$data$q_known)) {
         if (is.null(Q)) {
@@ -483,7 +498,8 @@ server <- function(input, output, session)
           parallel = isTRUE(input$parallel),
           n_cores = as.integer(input$n_cores),
           progress = isTRUE(input$show_progress),
-          print_every = as.integer(input$print_every)
+          print_every = as.integer(input$print_every),
+          progress_callback = shiny_progress_callback
         )
       } else {
         fit <- AHM::AHMQ(
@@ -499,7 +515,8 @@ server <- function(input, output, session)
           parallel = isTRUE(input$parallel),
           n_cores = as.integer(input$n_cores),
           progress = isTRUE(input$show_progress),
-          print_every = as.integer(input$print_every)
+          print_every = as.integer(input$print_every),
+          progress_callback = shiny_progress_callback
         )
       }
       runtime <- proc.time() - t0
@@ -735,5 +752,6 @@ server <- function(input, output, session)
 }
 
 shiny::shinyApp(ui, server)
+
 
 

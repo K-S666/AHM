@@ -36,6 +36,8 @@ extract_estimates <- function(object, ...)
   out <- list(
     est_s = est$Est_s,
     est_g = est$Est_g,
+    sd_s = est$Est_s_sd,
+    sd_g = est$Est_g_sd,
     est_alpha = est$Est_alpha,
     est_Q = est$Est_Q,
     known_Q = isTRUE(est$known_Q),
@@ -43,6 +45,7 @@ extract_estimates <- function(object, ...)
     est_G = est$Est_G,
     est_G_posterior = est$Est_GG,
     est_pi = est$Est_pi,
+    sd_pi = est$Est_pi_sd,
     cut_value = est$cut_value,
     DIC = est$DIC,
     DIC_all = est$DIC_all,
@@ -86,3 +89,4 @@ print.AHMQ_estimates <- function(x, digits = 3, ...)
   }
   invisible(x)
 }
+
