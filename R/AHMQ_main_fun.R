@@ -38,23 +38,9 @@ ahm_read_progress <- function(progress_dir, chain_num)
   current
 }
 
-ahm_supports_ansi_progress <- function()
+ahm_supports_console_progress <- function()
 {
-  isTRUE(interactive()) &&
-    (nzchar(Sys.getenv("RSTUDIO")) || nzchar(Sys.getenv("TERM"))) &&
-    identical(sink.number(type = "output"), 0L)
-}
-
-ahm_clear_previous_progress <- function()
-{
-  n <- .ahm_progress_state$lines
-  if (is.null(n) || n <= 0L || !ahm_supports_ansi_progress()) {
-    return(invisible(FALSE))
-  }
-  for (i in seq_len(n)) {
-    cat("\033[1A\033[2K")
-  }
-  invisible(TRUE)
+  isTRUE(interactive()) && identical(sink.number(type = "output"), 0L)
 }
 
 ahm_print_progress <- function(model, current, total, final = FALSE)
@@ -65,19 +51,24 @@ ahm_print_progress <- function(model, current, total, final = FALSE)
     sprintf("chain %d: %d/%d, %.1f%%", seq_along(current), current, total, pct)
   )
 
-  if (ahm_supports_ansi_progress()) {
-    ahm_clear_previous_progress()
-    cat(paste0(lines, collapse = "\n"), "\n", sep = "")
-    .ahm_progress_state$lines <- length(lines)
+  if (ahm_supports_console_progress()) {
+    one_line <- paste(lines, collapse = " | ")
+    old_width <- .ahm_progress_state$width
+    if (is.null(old_width)) {
+      old_width <- 0L
+    }
+    pad <- max(0L, old_width - nchar(one_line, type = "width"))
+    cat("\r", one_line, strrep(" ", pad), sep = "")
+    .ahm_progress_state$width <- nchar(one_line, type = "width")
     if (isTRUE(final)) {
-      .ahm_progress_state$lines <- 0L
+      cat("\n")
+      .ahm_progress_state$width <- 0L
     }
   } else {
     cat("\n", paste0(lines, collapse = "\n"), "\n", sep = "")
   }
   utils::flush.console()
 }
-
 ahm_parallel_lapply_progress <- function(cl,
                                          X,
                                          fun,
