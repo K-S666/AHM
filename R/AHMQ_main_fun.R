@@ -379,7 +379,7 @@ AHMQ <- function(Y, K,
     result <- lapply(seq_len(chain_num), run_chain)
   }
 
-  runtime <- proc.time()[['elapsed']] - start_time
+  runtime <- as.difftime(proc.time()[['elapsed']] - start_time, units = "secs")
   result <- lapply(result, function(chain) {
     chain$data$runtime <- runtime
     chain
@@ -642,7 +642,7 @@ AHM <- function(Y, Q,
     result <- lapply(seq_len(chain_num), run_chain)
   }
 
-  runtime <- proc.time()[['elapsed']] - start_time
+  runtime <- as.difftime(proc.time()[['elapsed']] - start_time, units = "secs")
   result <- lapply(result, function(chain) {
     chain$data$runtime <- runtime
     chain

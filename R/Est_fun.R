@@ -370,6 +370,9 @@ Est_fun <- function(result,
   }
 
   runtime <- attr(result, 'runtime', exact = TRUE) %||% result[[1]]$data$runtime
+  if (!is.null(runtime) && !inherits(runtime, "difftime")) {
+    runtime <- as.difftime(as.numeric(runtime), units = "secs")
+  }
 
   out <- list(Est_s = sel$s,
               Est_g = sel$g,

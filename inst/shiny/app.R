@@ -528,7 +528,7 @@ server <- function(input, output, session)
         return_samples = keep_samples,
         verbose = FALSE
       )
-      est$runtime <- runtime["elapsed"]
+      est$runtime <- as.difftime(as.numeric(runtime["elapsed"]), units = "secs")
       summ <- AHM::summary_est(est)
       sim_summ <- NULL
       if (rv$data$source == "simulation") {

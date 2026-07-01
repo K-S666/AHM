@@ -92,7 +92,7 @@ print.est_summary <- function(x, ...)
   cat("Best chain by DIC:", x$fit$best_chain,
       " DIC:", round(x$fit$DIC, d), "\n")
   if (!is.null(x$fit$runtime)) {
-    cat("Runtime:", round(as.numeric(x$fit$runtime), d), "seconds\n")
+    cat("Runtime:", round(as.numeric(x$fit$runtime, units = "secs"), d), "seconds\n")
   }
 
   cat("\nDIC by chain:\n")
