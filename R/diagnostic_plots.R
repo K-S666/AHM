@@ -173,37 +173,56 @@ plot_Rhat_curve <- function(curve,
 #' can draw a directed graph, a posterior edge-probability heatmap, or both in
 #' one figure. The hierarchy matrix is interpreted as
 #' \code{G[prerequisite, target] = 1}. If an \code{\link{Est_fun}} or
-#' \code{\link{extract_estimates}} result is supplied, \code{G} and
-#' \code{G_posterior} are read from the object automatically.
+#' \code{\link{extract_estimates}} result is supplied, \code{G} and the
+#' posterior mean of \code{G} are read from the object automatically.
+#'
+#' For the graph panel, posterior matrices are thresholded by \code{cut_value}.
+#' By default, the displayed DAG is the transitive reduction of the binary
+#' hierarchy, which removes redundant transitive edges while preserving the same
+#' reachability relation. Set \code{reduce_transitive = FALSE} to draw all
+#' binary edges; long edges that skip hierarchy levels are drawn as curved arrows
+#' so that they remain visible.
 #'
 #' @param G Binary hierarchy adjacency matrix, posterior probability matrix,
-#'   or an object returned by \code{\link{Est_fun}} or
-#'   \code{\link{extract_estimates}}.
+#'   or an object returned by \code{\link{Est_fun}},
+#'   \code{\link{extract_estimates}}, or \code{\link{simu_result_summary}}.
+#' @param is_posterior Logical; whether \code{G} should be treated as a
+#'   posterior edge-probability matrix when \code{G} is supplied directly as a
+#'   matrix. If \code{NULL}, matrices with entries strictly between 0 and 1 are
+#'   treated as posterior matrices.
 #' @param G_posterior Optional posterior edge-probability matrix. If omitted
 #'   and \code{G} is an estimate object, the stored posterior mean of G is used.
 #' @param type Plot type: \code{"graph"}, \code{"heatmap"}, or \code{"both"}.
-#' @param cut_value Threshold used to binarize \code{G_posterior} for the graph
-#'   when a binary \code{G} is not supplied.
+#' @param cut_value Threshold used to binarize posterior edge probabilities for
+#'   the graph.
+#' @param reduce_transitive If \code{TRUE}, draw the transitive reduction of the
+#'   binary hierarchy in the graph panel. If \code{FALSE}, draw all binary edges.
+#' @param curve_edges If \code{TRUE}, draw long edges that skip hierarchy levels
+#'   as curved arrows when \code{reduce_transitive = FALSE}.
 #' @param labels Optional attribute labels.
 #' @param file Optional PNG file path. If \code{NULL}, the active graphics
 #'   device is used.
 #' @param width,height,res PNG device settings used when \code{file} is not
 #'   \code{NULL}.
-#' @param main Plot title.
+#' @param main Plot title for a single graph or heatmap panel.
 #' @param node_col Node fill color.
 #' @param edge_col Arrow color.
-#' @return Invisibly returns a data frame with node coordinates.
+#' @return Invisibly returns a list containing the binary hierarchy used before
+#'   reduction, the hierarchy drawn in the graph panel, and node coordinates.
 #' @export
 plot_G_graph <- function(G,
+                         is_posterior = NULL,
                          G_posterior = NULL,
                          type = c("graph", "heatmap", "both"),
                          cut_value = 0.2,
+                         reduce_transitive = TRUE,
+                         curve_edges = TRUE,
                          labels = NULL,
                          file = NULL,
                          width = 1000,
                          height = 700,
                          res = 130,
-                         main = "Estimated hierarchy G",
+                         main = NULL,
                          node_col = "white",
                          edge_col = "gray30")
 {
@@ -217,6 +236,9 @@ plot_G_graph <- function(G,
       cut_value <- G$cut_value
     }
     G <- G$aligned_estimates$Est_G
+    if (is.null(is_posterior)) {
+      is_posterior <- FALSE
+    }
   } else if (is.list(G) && all(c("Est_G", "Est_GG") %in% names(G))) {
     if (is.null(G_posterior)) {
       G_posterior <- G$Est_GG
@@ -225,6 +247,9 @@ plot_G_graph <- function(G,
       cut_value <- G$cut_value
     }
     G <- G$Est_G
+    if (is.null(is_posterior)) {
+      is_posterior <- FALSE
+    }
   } else if (is.list(G) && all(c("est_G", "est_G_posterior") %in% names(G))) {
     if (is.null(G_posterior)) {
       G_posterior <- G$est_G_posterior
@@ -233,6 +258,9 @@ plot_G_graph <- function(G,
       cut_value <- G$cut_value
     }
     G <- G$est_G
+    if (is.null(is_posterior)) {
+      is_posterior <- FALSE
+    }
   }
 
   G_input <- as.matrix(G)
@@ -240,52 +268,69 @@ plot_G_graph <- function(G,
   if (!identical(dim(G_input), c(K, K))) {
     stop("G must be a square matrix.", call. = FALSE)
   }
-  if (is.null(G_posterior) && any(G_input > 0 & G_input < 1, na.rm = TRUE)) {
-    G_posterior <- G_input
-  }
-  if (!is.null(G_posterior)) {
-    G_posterior <- as.matrix(G_posterior)
-    if (!identical(dim(G_posterior), c(K, K))) {
-      stop("G_posterior must have the same dimensions as G.", call. = FALSE)
-    }
+
+  if (is.null(is_posterior)) {
+    is_posterior <- any(G_input > 0 & G_input < 1, na.rm = TRUE)
   }
 
-  G_binary <- G_input
-  if (any(G_binary > 0 & G_binary < 1, na.rm = TRUE)) {
-    G_binary <- (G_binary > cut_value) * 1
+  if (isTRUE(is_posterior)) {
+    G_posterior <- matrix(pmax(0, pmin(1, as.numeric(G_input))),
+                          nrow = K,
+                          ncol = K)
+    G_binary <- (G_posterior > cut_value) * 1
+  } else {
+    if (!is.null(G_posterior)) {
+      G_posterior <- as.matrix(G_posterior)
+      if (!identical(dim(G_posterior), c(K, K))) {
+        stop("G_posterior must have the same dimensions as G.", call. = FALSE)
+      }
+    }
+    G_binary <- G_input
+    G_binary[G_binary != 0] <- 1
   }
-  G_binary[G_binary != 0] <- 1
+  diag(G_binary) <- 0
 
   if (is.null(labels)) {
     labels <- paste0("A", seq_len(K))
   }
+  if (length(labels) != K) {
+    stop("labels must have length equal to nrow(G).", call. = FALSE)
+  }
 
-  dag_layout <- function(G_binary) {
-    if (K == 4L && identical(unname(G_binary), unname(simu_G("linear")))) {
+  if (isTRUE(reduce_transitive)) {
+    G_plot <- transitive_reduction_G(G_binary)
+  } else {
+    G_plot <- G_binary
+  }
+
+  dag_layout <- function(A) {
+    if (K == 4L && identical(unname(A), unname(simu_G("linear")))) {
       return(data.frame(x = c(0, 0, 0, 0), y = c(3, 2, 1, 0), depth = c(0, 1, 2, 3)))
     }
-    if (K == 4L && identical(unname(G_binary), unname(simu_G("convergent")))) {
+    if (K == 4L && identical(unname(A), unname(simu_G("convergent")))) {
       return(data.frame(x = c(0, -1, 1, 0), y = c(2, 1, 1, 0), depth = c(0, 1, 1, 2)))
     }
-    if (K == 4L && identical(unname(G_binary), unname(simu_G("divergent")))) {
+    if (K == 4L && identical(unname(A), unname(simu_G("divergent")))) {
       return(data.frame(x = c(0, -1, 0, 1), y = c(1, 0, 0, 0), depth = c(0, 1, 1, 1)))
     }
-    if (K == 4L && identical(unname(G_binary), unname(simu_G("unstructured")))) {
+    if (K == 4L && identical(unname(A), unname(simu_G("unstructured")))) {
       return(data.frame(x = c(0, -1, 1, 1), y = c(2, 1, 1, 0), depth = c(0, 1, 1, 2)))
     }
 
-    roots <- which(colSums(G_binary) == 0)
+    roots <- which(colSums(A) == 0)
     if (length(roots) == 0L) {
       roots <- seq_len(K)
     }
     depth <- rep(NA_integer_, K)
     depth[roots] <- 0L
     changed <- TRUE
-    while (changed) {
+    guard <- 0L
+    while (changed && guard < K * K) {
       changed <- FALSE
+      guard <- guard + 1L
       for (parent in seq_len(K)) {
         if (is.na(depth[parent])) next
-        for (child in which(G_binary[parent, ] == 1)) {
+        for (child in which(A[parent, ] == 1)) {
           new_depth <- depth[parent] + 1L
           if (is.na(depth[child]) || new_depth > depth[child]) {
             depth[child] <- new_depth
@@ -300,7 +345,9 @@ plot_G_graph <- function(G,
     y <- -depth
     for (d in sort(unique(depth))) {
       idx <- which(depth == d)
-      x[idx] <- seq(-(length(idx) - 1) / 2, (length(idx) - 1) / 2, length.out = length(idx))
+      x[idx] <- seq(-(length(idx) - 1) / 2,
+                    (length(idx) - 1) / 2,
+                    length.out = length(idx))
     }
     data.frame(x = x, y = y, depth = depth)
   }
@@ -309,6 +356,7 @@ plot_G_graph <- function(G,
   x <- layout$x
   y <- layout$y
   depth <- layout$depth
+  node_radius <- 0.18
 
   if (!is.null(file)) {
     grDevices::png(file, width = width, height = height, res = res)
@@ -318,10 +366,69 @@ plot_G_graph <- function(G,
   old_par <- graphics::par(no.readonly = TRUE)
   on.exit(graphics::par(old_par), add = TRUE)
 
+  draw_arrow_head <- function(tip, direction, size = 0.11, angle = pi / 7,
+                              col = edge_col, lwd = 1.5) {
+    direction_len <- sqrt(sum(direction^2))
+    if (direction_len <= 0) return(invisible(NULL))
+    direction <- direction / direction_len
+    theta <- atan2(direction[2], direction[1])
+    left <- theta + pi - angle
+    right <- theta + pi + angle
+    p_left <- tip + size * c(cos(left), sin(left))
+    p_right <- tip + size * c(cos(right), sin(right))
+    graphics::segments(tip[1], tip[2], p_left[1], p_left[2], col = col, lwd = lwd)
+    graphics::segments(tip[1], tip[2], p_right[1], p_right[2], col = col, lwd = lwd)
+    invisible(NULL)
+  }
+
+  draw_straight_edge <- function(parent, child) {
+    start <- c(x[parent], y[parent])
+    end <- c(x[child], y[child])
+    vec <- end - start
+    len <- sqrt(sum(vec^2))
+    if (len <= 0) return(invisible(NULL))
+
+    unit <- vec / len
+    p0 <- start + node_radius * unit
+    p1 <- end - node_radius * unit
+
+    graphics::segments(p0[1], p0[2], p1[1], p1[2], col = edge_col, lwd = 1.5)
+    draw_arrow_head(p1, unit, col = edge_col, lwd = 1.5)
+    invisible(NULL)
+  }
+
+  draw_curved_edge <- function(parent, child, curve = 0.45) {
+    start <- c(x[parent], y[parent])
+    end <- c(x[child], y[child])
+    vec <- end - start
+    len <- sqrt(sum(vec^2))
+    if (len <= 0) return(invisible(NULL))
+
+    unit <- vec / len
+    normal <- c(-unit[2], unit[1])
+    if (normal[1] < 0) {
+      normal <- -normal
+    }
+
+    p0 <- start + node_radius * unit
+    p2 <- end - node_radius * unit
+    p1 <- (p0 + p2) / 2 + curve * normal
+
+    t <- seq(0, 1, length.out = 80)
+    bx <- (1 - t)^2 * p0[1] + 2 * (1 - t) * t * p1[1] + t^2 * p2[1]
+    by <- (1 - t)^2 * p0[2] + 2 * (1 - t) * t * p1[2] + t^2 * p2[2]
+    graphics::lines(bx, by, col = edge_col, lwd = 1.5)
+
+    tangent <- 2 * (1 - 0.98) * (p1 - p0) + 2 * 0.98 * (p2 - p1)
+    draw_arrow_head(c(bx[length(bx)], by[length(by)]), tangent,
+                    col = edge_col, lwd = 1.5)
+    invisible(NULL)
+  }
+
   draw_graph <- function(plot_main) {
     graphics::par(mar = c(1, 1, 3, 1))
     graphics::plot(NA,
-                   xlim = range(x) + c(-0.8, 0.8),
+                   xlim = range(x) + c(-1.0, 1.0),
                    ylim = range(y) + c(-0.8, 0.8),
                    axes = FALSE,
                    xlab = "",
@@ -329,30 +436,22 @@ plot_G_graph <- function(G,
                    main = plot_main,
                    asp = 1)
 
-    edge_index <- which(G_binary == 1, arr.ind = TRUE)
+    edge_index <- which(G_plot == 1, arr.ind = TRUE)
     if (nrow(edge_index) > 0L) {
       for (i in seq_len(nrow(edge_index))) {
         parent <- edge_index[i, 1L]
         child <- edge_index[i, 2L]
-        dx <- x[child] - x[parent]
-        dy <- y[child] - y[parent]
-        edge_len <- sqrt(dx^2 + dy^2)
-        radius <- 0.18
-        if (edge_len > 0) {
-          graphics::arrows(x[parent] + radius * dx / edge_len,
-                           y[parent] + radius * dy / edge_len,
-                           x[child] - radius * dx / edge_len,
-                           y[child] - radius * dy / edge_len,
-                           length = 0.12,
-                           lwd = 1.5,
-                           col = edge_col)
+        skips_layer <- abs(depth[child] - depth[parent]) > 1
+        if (isTRUE(curve_edges) && skips_layer) {
+          draw_curved_edge(parent, child)
+        } else {
+          draw_straight_edge(parent, child)
         }
       }
     }
 
-    radius <- 0.18
     graphics::symbols(x, y,
-                      circles = rep(radius, K),
+                      circles = rep(node_radius, K),
                       inches = FALSE,
                       add = TRUE,
                       bg = node_col,
@@ -361,11 +460,7 @@ plot_G_graph <- function(G,
   }
 
   draw_heatmap <- function(plot_main) {
-    if (is.null(G_posterior)) {
-      heat <- G_binary
-    } else {
-      heat <- G_posterior
-    }
+    heat <- if (is.null(G_posterior)) G_binary else G_posterior
     heat <- matrix(pmax(0, pmin(1, as.numeric(heat))), nrow = K, ncol = K)
     graphics::par(mar = c(4, 4, 3, 5))
     image_cols <- grDevices::colorRampPalette(c("white", "#2166ac"))(101)
@@ -389,11 +484,10 @@ plot_G_graph <- function(G,
                        child + 0.5, y_pos + 0.5,
                        col = image_cols[col_id],
                        border = "gray80")
-        graphics::text(child, y_pos, labels = sprintf("%.2f", prob),
-                       cex = 0.75)
+        graphics::text(child, y_pos, labels = sprintf("%.2f", prob), cex = 0.75)
       }
     }
-    if (!is.null(cut_value)) {
+    if (!is.null(cut_value) && !is.null(G_posterior)) {
       graphics::mtext(paste0("cut_value = ", cut_value), side = 3,
                       line = 0.2, cex = 0.8)
     }
@@ -411,9 +505,17 @@ plot_G_graph <- function(G,
     graphics::mtext("Posterior probability", side = 4, line = 2.2, cex = 0.75)
   }
 
+  if (is.null(main)) {
+    main <- if (isTRUE(reduce_transitive)) {
+      "Transitive reduction of G"
+    } else {
+      "G with all binary edges"
+    }
+  }
+
   if (type == "both") {
     graphics::par(mfrow = c(1, 2))
-    draw_graph("Estimated G")
+    draw_graph(main)
     draw_heatmap("Posterior mean of G")
   } else if (type == "heatmap") {
     draw_heatmap(main)
@@ -421,13 +523,16 @@ plot_G_graph <- function(G,
     draw_graph(main)
   }
 
-  invisible(data.frame(attribute = seq_len(K),
-                       label = labels,
-                       x = x,
-                       y = y,
-                       depth = depth))
+  invisible(list(
+    G_binary = G_binary,
+    G_plot = G_plot,
+    layout = data.frame(attribute = seq_len(K),
+                        label = labels,
+                        x = x,
+                        y = y,
+                        depth = depth)
+  ))
 }
-
 #' Trace plots for AHMQ MCMC chains
 #'
 #' Draws trace plots for selected scalar parameters. By default, all item-level
@@ -581,6 +686,7 @@ traceplot_AHMQ <- function(result,
   }
   invisible(pages)
 }
+
 
 
 
