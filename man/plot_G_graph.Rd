@@ -6,31 +6,45 @@
 \usage{
 plot_G_graph(
   G,
+  is_posterior = NULL,
   G_posterior = NULL,
   type = c("graph", "heatmap", "both"),
   cut_value = 0.2,
+  reduce_transitive = TRUE,
+  curve_edges = TRUE,
   labels = NULL,
   file = NULL,
   width = 1000,
   height = 700,
   res = 130,
-  main = "Estimated hierarchy G",
+  main = NULL,
   node_col = "white",
   edge_col = "gray30"
 )
 }
 \arguments{
 \item{G}{Binary hierarchy adjacency matrix, posterior probability matrix,
-or an object returned by \code{\link{Est_fun}} or
-\code{\link{extract_estimates}}.}
+or an object returned by \code{\link{Est_fun}},
+\code{\link{extract_estimates}}, or \code{\link{simu_result_summary}}.}
+
+\item{is_posterior}{Logical; whether \code{G} should be treated as a
+posterior edge-probability matrix when \code{G} is supplied directly as a
+matrix. If \code{NULL}, matrices with entries strictly between 0 and 1 are
+treated as posterior matrices.}
 
 \item{G_posterior}{Optional posterior edge-probability matrix. If omitted
 and \code{G} is an estimate object, the stored posterior mean of G is used.}
 
 \item{type}{Plot type: \code{"graph"}, \code{"heatmap"}, or \code{"both"}.}
 
-\item{cut_value}{Threshold used to binarize \code{G_posterior} for the graph
-when a binary \code{G} is not supplied.}
+\item{cut_value}{Threshold used to binarize posterior edge probabilities for
+the graph.}
+
+\item{reduce_transitive}{If \code{TRUE}, draw the transitive reduction of the
+binary hierarchy in the graph panel. If \code{FALSE}, draw all binary edges.}
+
+\item{curve_edges}{If \code{TRUE}, draw long edges that skip hierarchy levels
+as curved arrows when \code{reduce_transitive = FALSE}.}
 
 \item{labels}{Optional attribute labels.}
 
@@ -40,20 +54,29 @@ device is used.}
 \item{width, height, res}{PNG device settings used when \code{file} is not
 \code{NULL}.}
 
-\item{main}{Plot title.}
+\item{main}{Plot title for a single graph or heatmap panel.}
 
 \item{node_col}{Node fill color.}
 
 \item{edge_col}{Arrow color.}
 }
 \value{
-Invisibly returns a data frame with node coordinates.
+Invisibly returns a list containing the binary hierarchy used before
+  reduction, the hierarchy drawn in the graph panel, and node coordinates.
 }
 \description{
 Draws the estimated attribute hierarchy using base R graphics. The function
 can draw a directed graph, a posterior edge-probability heatmap, or both in
 one figure. The hierarchy matrix is interpreted as
 \code{G[prerequisite, target] = 1}. If an \code{\link{Est_fun}} or
-\code{\link{extract_estimates}} result is supplied, \code{G} and
-\code{G_posterior} are read from the object automatically.
+\code{\link{extract_estimates}} result is supplied, \code{G} and the
+posterior mean of \code{G} are read from the object automatically.
+}
+\details{
+For the graph panel, posterior matrices are thresholded by \code{cut_value}.
+By default, the displayed DAG is the transitive reduction of the binary
+hierarchy, which removes redundant transitive edges while preserving the same
+reachability relation. Set \code{reduce_transitive = FALSE} to draw all
+binary edges; long edges that skip hierarchy levels are drawn as curved arrows
+so that they remain visible.
 }
