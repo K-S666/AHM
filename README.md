@@ -1,10 +1,10 @@
-# AHM
+# cdmArch
 
 **Bayesian DINA estimation with unknown Q-matrix and attribute hierarchy**
 
 [![GitHub](https://img.shields.io/badge/GitHub-K--S666%2FcdmArch-blue)](https://github.com/K-S666/cdmArch)
 
-**AHM** is an R package for Bayesian estimation via MCMC for the DINA model with an unknown **attribute hierarchy**, allowing the **Q-matrix** to be either unknown and estimated jointly or supplied as known. The sampler jointly estimates item slipping and guessing parameters, examinee attribute profiles, latent class probabilities, the Q-matrix when needed, and a transitive-reduced attribute hierarchy.
+**cdmArch** is an R package for Bayesian estimation via MCMC for the DINA model with an unknown **attribute hierarchy**, allowing the **Q-matrix** to be either unknown and estimated jointly or supplied as known. The sampler jointly estimates item slipping and guessing parameters, examinee attribute profiles, latent class probabilities, the Q-matrix when needed, and a transitive-reduced attribute hierarchy.
 
 A fixed-Q variant (`AHM()`) is provided when the Q-matrix is known. The package includes post-processing for attribute label switching, Gelman-Rubin Rhat diagnostics, DIC-based chain selection, posterior summaries, simulation utilities, a bundled ECPE real-data example, and an optional Shiny analysis app.
 

@@ -49,8 +49,3 @@ transitive_reduction_G <- function(G, check_acyclic = TRUE)
   storage.mode(out) <- "numeric"
   out
 }
-
-#' @rdname transitive_reduction_G
-#' @export
-minimal_G <- transitive_reduction_G
-

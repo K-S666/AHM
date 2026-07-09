@@ -2,12 +2,9 @@
 % Please edit documentation in R/hierarchy_tools.R
 \name{transitive_reduction_G}
 \alias{transitive_reduction_G}
-\alias{minimal_G}
 \title{Transitive reduction of an attribute hierarchy}
 \usage{
 transitive_reduction_G(G, check_acyclic = TRUE)
-
-minimal_G(G, check_acyclic = TRUE)
 }
 \arguments{
 \item{G}{Binary square adjacency matrix for an attribute hierarchy.}

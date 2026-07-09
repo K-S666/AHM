@@ -5,6 +5,14 @@ AHM_Q <- function(Y, K, N1 = 128L, chain_length = 20000L, burn_in = 10000L, a_s0
     .Call(`_cdmArch_AHM_Q`, Y, K, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
 }
 
+AHM_update <- function(Y, alpha, s, g, Q, G, pi, p_add, alpha_all, Q_all, N, J, K, L, N1, a_s0, a_g0, b_s0, b_g0, delta0, eta) {
+    invisible(.Call(`_cdmArch_AHM_update`, Y, alpha, s, g, Q, G, pi, p_add, alpha_all, Q_all, N, J, K, L, N1, a_s0, a_g0, b_s0, b_g0, delta0, eta))
+}
+
+AHM_update_fixQ <- function(Y, alpha, s, g, Q, G, pi, p_add, alpha_all, Q_all, N, J, K, L, N1, a_s0, a_g0, b_s0, b_g0, delta0, eta) {
+    invisible(.Call(`_cdmArch_AHM_update_fixQ`, Y, alpha, s, g, Q, G, pi, p_add, alpha_all, Q_all, N, J, K, L, N1, a_s0, a_g0, b_s0, b_g0, delta0, eta))
+}
+
 AHM_fixedQ <- function(Y, Q, N1 = 128L, chain_length = 20000L, burn_in = 10000L, a_s0 = 1.0, a_g0 = 1.0, b_s0 = 1.0, b_g0 = 1.0, p_add = 0.5, chain_id = 1L, progress = TRUE, print_every = 1000L) {
     .Call(`_cdmArch_AHM_fixedQ`, Y, Q, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
 }
@@ -95,5 +103,37 @@ sample_int <- function(N, N1) {
 
 random_Q <- function(J, K) {
     .Call(`_cdmArch_random_Q`, J, K)
+}
+
+add_path_sample1 <- function(R, G, K) {
+    .Call(`_cdmArch_add_path_sample1`, R, G, K)
+}
+
+reduce_path_sample1 <- function(G, K) {
+    .Call(`_cdmArch_reduce_path_sample1`, G, K)
+}
+
+update_G <- function(y, s, g, alpha, alpha_all, Q, G, R, N, J, K, L, p_add, pi, delta0, G_new, prob_edge, action) {
+    .Call(`_cdmArch_update_G`, y, s, g, alpha, alpha_all, Q, G, R, N, J, K, L, p_add, pi, delta0, G_new, prob_edge, action)
+}
+
+AHM_G_update <- function(y, s, g, alpha, alpha_all, Q, G, R, N, J, K, L, p_add, pi0, delta0) {
+    .Call(`_cdmArch_AHM_G_update`, y, s, g, alpha, alpha_all, Q, G, R, N, J, K, L, p_add, pi0, delta0)
+}
+
+AHM_Q_update <- function(y, s, g, alpha, Q_all, Q, N, J, K, alpha_current_possible_index, eta, alpha_code) {
+    .Call(`_cdmArch_AHM_Q_update`, y, s, g, alpha, Q_all, Q, N, J, K, alpha_current_possible_index, eta, alpha_code)
+}
+
+AHM_alpha_update <- function(y, s, g, Q, G, alpha_all, pi0, N, J, K, L) {
+    .Call(`_cdmArch_AHM_alpha_update`, y, s, g, Q, G, alpha_all, pi0, N, J, K, L)
+}
+
+rDirichlet <- function(deltas) {
+    .Call(`_cdmArch_rDirichlet`, deltas)
+}
+
+AHM_alpha_pi_update <- function(y, s, g, Q, G, alpha_all, pi0, delta0, N, J, K, L) {
+    .Call(`_cdmArch_AHM_alpha_pi_update`, y, s, g, Q, G, alpha_all, pi0, delta0, N, J, K, L)
 }
 
