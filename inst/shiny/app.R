@@ -1,5 +1,5 @@
 if (!requireNamespace("shiny", quietly = TRUE)) {
-  stop("The AHM Shiny app requires the 'shiny' package.")
+  stop("The cdmArch Shiny app requires the 'shiny' package.")
 }
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -50,7 +50,7 @@ read_uploaded_matrix <- function(file, header = TRUE, drop_first_col = FALSE,
 
 make_G_preset <- function(type, K)
 {
-  AHM::simu_G(type = type, K = K)
+  cdmArch::simu_G(type = type, K = K)
 }
 
 binary_check <- function(x, name)
@@ -75,7 +75,7 @@ matrix_to_df <- function(x, row_prefix = "row")
 }
 
 ui <- shiny::navbarPage(
-  title = "AHM Workbench",
+  title = "cdmArch Workbench",
   id = "main_nav",
   shiny::tabPanel(
     "Data",
@@ -342,7 +342,7 @@ server <- function(input, output, session)
         s_range <- c(input$sim_s_min, input$sim_s_max)
         g_range <- c(input$sim_g_min, input$sim_g_max)
       }
-      dat <- AHM::simulate_ahmq_data(
+      dat <- cdmArch::simulate_ahmq_data(
         N = input$sim_N,
         J = input$sim_J,
         K = K,
@@ -369,7 +369,7 @@ server <- function(input, output, session)
   shiny::observeEvent(input$prepare_real, {
     tryCatch({
       if (input$real_source == "ecpe") {
-        dat <- AHM::ecpe_ahmq_data()
+        dat <- cdmArch::ecpe_ahmq_data()
         rv$data <- list(Y = dat$Y, Q = dat$Q, K = dat$K,
                         q_known = isTRUE(input$ecpe_use_q),
                         source = "real_ecpe")
@@ -445,7 +445,7 @@ server <- function(input, output, session)
   })
   output$true_G_plot <- shiny::renderPlot({
     shiny::req(rv$truth)
-    AHM::plot_G_graph(rv$truth$G, type = "graph", labels = seq_len(rv$truth$K),
+    cdmArch::plot_G_graph(rv$truth$G, type = "graph", labels = seq_len(rv$truth$K),
                       main = "True hierarchy G")
   })
 
@@ -485,7 +485,7 @@ server <- function(input, output, session)
         if (is.null(Q)) {
           stop("Known-Q model selected but Q is not available.", call. = FALSE)
         }
-        fit <- AHM::AHM(
+        fit <- cdmArch::AHM(
           Y, Q,
           N1 = N1,
           chain_length = chain_length,
@@ -502,7 +502,7 @@ server <- function(input, output, session)
           progress_callback = shiny_progress_callback
         )
       } else {
-        fit <- AHM::AHMQ(
+        fit <- cdmArch::AHMQ(
           Y, K,
           N1 = N1,
           chain_length = chain_length,
@@ -521,7 +521,7 @@ server <- function(input, output, session)
       }
       runtime <- proc.time() - t0
       with_shiny_progress$set(message = "Post-processing estimates", value = 1)
-      est <- AHM::Est_fun(
+      est <- cdmArch::Est_fun(
         fit,
         cut_value = input$cut_value,
         compute_rhat = isTRUE(input$compute_rhat),
@@ -529,11 +529,11 @@ server <- function(input, output, session)
         verbose = FALSE
       )
       est$runtime <- as.difftime(as.numeric(runtime["elapsed"]), units = "secs")
-      summ <- AHM::summary_est(est)
+      summ <- cdmArch::summary_est(est)
       sim_summ <- NULL
       if (rv$data$source == "simulation") {
         with_shiny_progress$set(message = "Computing simulation recovery metrics", value = 2)
-        sim_summ <- AHM::simu_result_summary(
+        sim_summ <- cdmArch::simu_result_summary(
           est,
           truth = rv$truth,
           align_labels = !isTRUE(est$known_Q) && keep_samples,
@@ -627,13 +627,13 @@ server <- function(input, output, session)
 
   output$G_plot <- shiny::renderPlot({
     shiny::req(rv$est)
-    AHM::plot_G_graph(rv$est, type = input$G_plot_type,
+    cdmArch::plot_G_graph(rv$est, type = input$G_plot_type,
                       cut_value = input$cut_value)
   })
 
   output$trace_plot <- shiny::renderPlot({
     shiny::req(rv$fit)
-    AHM::traceplot_AHMQ(
+    cdmArch::traceplot_AHMQ(
       rv$fit,
       parameter = input$trace_param,
       items = parse_indices(),
@@ -650,13 +650,13 @@ server <- function(input, output, session)
       return(invisible(NULL))
     }
     params <- c("s", "g")
-    curve <- AHM::compute_Rhat_curve(
+    curve <- cdmArch::compute_Rhat_curve(
       rv$fit,
       parameters = params,
       step = as.integer(input$rhat_step),
       include_burnin = isTRUE(input$rhat_include_burnin)
     )
-    AHM::plot_Rhat_curve(curve, threshold = 1.1)
+    cdmArch::plot_Rhat_curve(curve, threshold = 1.1)
   })
 
   output$sim_summary_text <- shiny::renderPrint({
@@ -698,22 +698,22 @@ server <- function(input, output, session)
   })
   output$sim_G_plot <- shiny::renderPlot({
     shiny::req(rv$sim_summary)
-    AHM::plot_G_graph(rv$sim_summary, type = "graph",
+    cdmArch::plot_G_graph(rv$sim_summary, type = "graph",
                       cut_value = input$cut_value,
                       labels = seq_len(nrow(rv$sim_summary$aligned_estimates$Est_G)),
                       main = "Truth-aligned estimated hierarchy G")
   })
 
   output$download_fit <- shiny::downloadHandler(
-    filename = function() "AHM_fit.rds",
+    filename = function() "cdmArch_fit.rds",
     content = function(file) saveRDS(rv$fit, file)
   )
   output$download_est <- shiny::downloadHandler(
-    filename = function() "AHM_estimates.rds",
+    filename = function() "cdmArch_estimates.rds",
     content = function(file) saveRDS(rv$est, file)
   )
   output$download_item <- shiny::downloadHandler(
-    filename = function() "AHM_item_parameters.csv",
+    filename = function() "cdmArch_item_parameters.csv",
     content = function(file) {
       shiny::req(rv$est)
       utils::write.csv(data.frame(item = seq_along(rv$est$Est_s),
@@ -723,7 +723,7 @@ server <- function(input, output, session)
     }
   )
   output$download_alpha <- shiny::downloadHandler(
-    filename = function() "AHM_alpha_estimates.csv",
+    filename = function() "cdmArch_alpha_estimates.csv",
     content = function(file) {
       shiny::req(rv$est)
       alpha <- rv$est$Est_alpha
@@ -732,7 +732,7 @@ server <- function(input, output, session)
     }
   )
   output$download_G <- shiny::downloadHandler(
-    filename = function() "AHM_G_estimate.csv",
+    filename = function() "cdmArch_G_estimate.csv",
     content = function(file) {
       shiny::req(rv$est)
       G <- rv$est$Est_G
@@ -741,7 +741,7 @@ server <- function(input, output, session)
     }
   )
   output$download_Q <- shiny::downloadHandler(
-    filename = function() "AHM_Q_matrix.csv",
+    filename = function() "cdmArch_Q_matrix.csv",
     content = function(file) {
       shiny::req(rv$est)
       Q <- if (isTRUE(rv$est$known_Q)) rv$est$Q_fixed else rv$est$Est_Q
@@ -752,6 +752,7 @@ server <- function(input, output, session)
 }
 
 shiny::shinyApp(ui, server)
+
 
 
 

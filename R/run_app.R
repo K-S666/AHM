@@ -1,4 +1,4 @@
-#' Launch the AHM Shiny application
+#' Launch the cdmArch Shiny application
 #'
 #' Opens the interactive analysis workbench bundled with the package. The app
 #' supports simulated data, the bundled ECPE real-data example, and user
@@ -15,9 +15,11 @@ run_AHM_app <- function(...)
     stop("The Shiny app requires the 'shiny' package. Install it with install.packages('shiny').",
          call. = FALSE)
   }
-  app_dir <- system.file("shiny", package = "AHM")
+  app_dir <- system.file("shiny", package = "cdmArch")
   if (!nzchar(app_dir)) {
     stop("Cannot find the bundled Shiny app directory.", call. = FALSE)
   }
   shiny::runApp(app_dir, ...)
 }
+
+

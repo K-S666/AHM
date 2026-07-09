@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_app.R
 \name{run_AHM_app}
 \alias{run_AHM_app}
-\title{Launch the AHM Shiny application}
+\title{Launch the cdmArch Shiny application}
 \usage{
 run_AHM_app(...)
 }
@@ -19,3 +19,4 @@ supports simulated data, the bundled ECPE real-data example, and user
 uploaded response/Q-matrix CSV files. The Shiny dependency is optional for
 the core package and is checked only when the app is launched.
 }
+
