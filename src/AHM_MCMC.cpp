@@ -69,6 +69,7 @@ Rcpp::List AHM_fixedQ(arma::mat Y,
       Rcpp::checkUserInterrupt();
     }
     if (progress && ((t + 1) == 1 || ((t + 1) % progress_every == 0) || ((t + 1) == chain_length))) {
+      ahm_write_progress_file(chain_id, t + 1);
       Rcpp::Rcout << "\rAHM chain " << chain_id << " iteration "
                   << (t + 1) << "/" << chain_length;
       if ((t + 1) == chain_length) Rcpp::Rcout << "\n";

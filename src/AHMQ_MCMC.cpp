@@ -1,4 +1,4 @@
-﻿#include "ahm_common.h"
+#include "ahm_common.h"
 
 using namespace Rcpp;
 
@@ -54,6 +54,7 @@ Rcpp::List AHM_Q(arma::mat Y,int K,int N1=128,int chain_length=20000,int burn_in
       Rcpp::checkUserInterrupt();
     }
     if (progress && ((t + 1) == 1 || ((t + 1) % progress_every == 0) || ((t + 1) == chain_length))) {
+      ahm_write_progress_file(chain_id, t + 1);
       Rcpp::Rcout << "\rAHMQ chain " << chain_id << " iteration "
                   << (t + 1) << "/" << chain_length;
       if ((t + 1) == chain_length) Rcpp::Rcout << "\n";
@@ -67,6 +68,3 @@ Rcpp::List AHM_Q(arma::mat Y,int K,int N1=128,int chain_length=20000,int burn_in
   return Rcpp::List::create(Rcpp::Named("alpha") = AA,Rcpp::Named("s") = SLIP,Rcpp::Named("g") = GUESS,
                             Rcpp::Named("pi") = PIS,Rcpp::Named("Q") = QQ,Rcpp::Named("G") = GG);
 }
-
-
-

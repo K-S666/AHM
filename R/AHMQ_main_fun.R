@@ -1,4 +1,4 @@
-﻿default_minibatch_size <- function(N1, N)
+default_minibatch_size <- function(N1, N)
 {
   if (is.null(N1)) {
     return(max(1L, floor(as.integer(N) / 2L)))
@@ -76,7 +76,7 @@ ahm_parallel_lapply_progress <- function(cl,
                                          progress_dir,
                                          model,
                                          progress = TRUE,
-                                         poll_interval = 1,
+                                         poll_interval = 0.05,
                                          progress_callback = NULL)
 {
   .ahm_progress_state$lines <- 0L
@@ -650,7 +650,3 @@ AHM <- function(Y, Q,
   attr(result, 'runtime') <- runtime
   result
 }
-
-
-
-

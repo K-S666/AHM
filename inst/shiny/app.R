@@ -478,6 +478,7 @@ server <- function(input, output, session)
             detail = detail,
             value = mean(pct) / 100
           )
+          try(session$flushReact(), silent = TRUE)
         }
       }
       t0 <- proc.time()
@@ -551,7 +552,6 @@ server <- function(input, output, session)
       shiny::showNotification(conditionMessage(e), type = "error", duration = 10)
     })
   })
-
   output$run_status <- shiny::renderPrint({
     cat(rv$status, "\n")
     if (!is.null(rv$fit)) {
@@ -752,7 +752,3 @@ server <- function(input, output, session)
 }
 
 shiny::shinyApp(ui, server)
-
-
-
-

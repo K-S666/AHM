@@ -4,7 +4,26 @@
 #include <RcppArmadillo.h>
 #include <rgen.h>
 #include <algorithm>
+#include <cstdlib>
+#include <fstream>
+#include <string>
 
+inline void ahm_write_progress_file(int chain_id, int iteration)
+{
+  const char* progress_dir = std::getenv("AHM_PROGRESS_DIR");
+  if (progress_dir == nullptr || progress_dir[0] == '\0') {
+    return;
+  }
+  std::string path(progress_dir);
+  if (!path.empty() && path.back() != '/' && path.back() != '\\') {
+    path += "/";
+  }
+  path += "chain_" + std::to_string(chain_id) + ".txt";
+  std::ofstream out(path.c_str(), std::ios::out | std::ios::trunc);
+  if (out.is_open()) {
+    out << iteration << std::endl;
+  }
+}
 arma::vec inv_bijectionvector(unsigned int K, double CL);
 double twoToten(arma::ivec x);
 arma::mat ff(arma::mat a);
