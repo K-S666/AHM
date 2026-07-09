@@ -1,4 +1,4 @@
-#' AHM: Bayesian Estimation via MCMC for the DINA Model
+#' cdmArch: Bayesian Estimation via MCMC for the DINA Model
 #'
 #' The package implements Bayesian estimation via MCMC for the DINA model with
 #' an unknown attribute hierarchy, allowing the Q-matrix to be either unknown
@@ -8,7 +8,7 @@
 #' interface.
 #'
 #' @keywords internal
-#' @useDynLib AHM, .registration = TRUE
+#' @useDynLib cdmArch, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @importFrom utils flush.console
 #' @rawNamespace export(compute_DIC)

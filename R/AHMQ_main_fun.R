@@ -1,4 +1,4 @@
-default_minibatch_size <- function(N1, N)
+﻿default_minibatch_size <- function(N1, N)
 {
   if (is.null(N1)) {
     return(max(1L, floor(as.integer(N) / 2L)))
@@ -351,7 +351,7 @@ AHMQ <- function(Y, K,
           NULL
         })
       } else {
-        parallel::clusterEvalQ(cl, library(AHM))
+        parallel::clusterEvalQ(cl, library(cdmArch))
       }
       parallel::clusterExport(
         cl,
@@ -614,7 +614,7 @@ AHM <- function(Y, Q,
           NULL
         })
       } else {
-        parallel::clusterEvalQ(cl, library(AHM))
+        parallel::clusterEvalQ(cl, library(cdmArch))
       }
       parallel::clusterExport(
         cl,
@@ -650,6 +650,7 @@ AHM <- function(Y, Q,
   attr(result, 'runtime') <- runtime
   result
 }
+
 
 
 

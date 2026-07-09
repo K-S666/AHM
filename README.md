@@ -2,7 +2,7 @@
 
 **Bayesian DINA estimation with unknown Q-matrix and attribute hierarchy**
 
-[![GitHub](https://img.shields.io/badge/GitHub-K--S666%2FAHM-blue)](https://github.com/K-S666/AHM)
+[![GitHub](https://img.shields.io/badge/GitHub-K--S666%2FcdmArch-blue)](https://github.com/K-S666/cdmArch)
 
 **AHM** is an R package for Bayesian estimation via MCMC for the DINA model with an unknown **attribute hierarchy**, allowing the **Q-matrix** to be either unknown and estimated jointly or supplied as known. The sampler jointly estimates item slipping and guessing parameters, examinee attribute profiles, latent class probabilities, the Q-matrix when needed, and a transitive-reduced attribute hierarchy.
 
@@ -35,13 +35,13 @@ install.packages("devtools")
 Then run:
 
 ```r
-remotes::install_github("K-S666/AHM")
+remotes::install_github("K-S666/cdmArch")
 ```
 
 Alternatively, with devtools:
 
 ```r
-devtools::install_github("K-S666/AHM")
+devtools::install_github("K-S666/cdmArch")
 ```
 
 No need to run `library(remotes)` or `library(devtools)`; the `::` prefix calls the function directly.
@@ -59,7 +59,7 @@ install.packages("shiny")
 ### Unknown Q-matrix (`AHMQ`)
 
 ```r
-library(AHM)
+library(cdmArch)
 
 ecpe <- ecpe_ahmq_data()
 fit <- AHMQ(
@@ -110,7 +110,7 @@ The bundled ECPE example is derived from `CDM::data.ecpe` in the **CDM** package
 Launch the bundled analysis workbench for simulated data, the ECPE example, or user-uploaded CSV files:
 
 ```r
-library(AHM)
+library(cdmArch)
 run_AHM_app()
 ```
 
@@ -150,5 +150,6 @@ GPL (>= 2)
 
 ## Repository
 
-https://github.com/K-S666/AHM
+https://github.com/K-S666/cdmArch
+
 

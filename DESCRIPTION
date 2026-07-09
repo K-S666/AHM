@@ -1,4 +1,4 @@
-Package: AHM
+Package: cdmArch
 Type: Package
 Title: Bayesian DINA Estimation with Unknown Attribute Hierarchy
 Version: 1.0.0
@@ -26,3 +26,4 @@ Suggests: shiny
 LinkingTo: Rcpp (>= 1.0.0), RcppArmadillo (>= 0.9.200), rgen
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 7.3.3
+

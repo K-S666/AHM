@@ -2,98 +2,98 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 AHM_Q <- function(Y, K, N1 = 128L, chain_length = 20000L, burn_in = 10000L, a_s0 = 1.0, a_g0 = 1.0, b_s0 = 1.0, b_g0 = 1.0, p_add = 0.5, chain_id = 1L, progress = TRUE, print_every = 1000L) {
-    .Call(`_AHM_AHM_Q`, Y, K, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
+    .Call(`_cdmArch_AHM_Q`, Y, K, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
 }
 
 AHM_fixedQ <- function(Y, Q, N1 = 128L, chain_length = 20000L, burn_in = 10000L, a_s0 = 1.0, a_g0 = 1.0, b_s0 = 1.0, b_g0 = 1.0, p_add = 0.5, chain_id = 1L, progress = TRUE, print_every = 1000L) {
-    .Call(`_AHM_AHM_fixedQ`, Y, Q, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
+    .Call(`_cdmArch_AHM_fixedQ`, Y, Q, N1, chain_length, burn_in, a_s0, a_g0, b_s0, b_g0, p_add, chain_id, progress, print_every)
 }
 
 dina_logL <- function(y, N, J, K, s, g, alpha, Q) {
-    .Call(`_AHM_dina_logL`, y, N, J, K, s, g, alpha, Q)
+    .Call(`_cdmArch_dina_logL`, y, N, J, K, s, g, alpha, Q)
 }
 
 dina_logL_vec <- function(y, N, J, K, chain, s, g, alpha, Q) {
-    .Call(`_AHM_dina_logL_vec`, y, N, J, K, chain, s, g, alpha, Q)
+    .Call(`_cdmArch_dina_logL_vec`, y, N, J, K, chain, s, g, alpha, Q)
 }
 
 bar_Dev_theta <- function(y, N, J, K, chain, s, g, alpha, Q) {
-    .Call(`_AHM_bar_Dev_theta`, y, N, J, K, chain, s, g, alpha, Q)
+    .Call(`_cdmArch_bar_Dev_theta`, y, N, J, K, chain, s, g, alpha, Q)
 }
 
 compute_DIC <- function(y, N, J, K, chain, s, g, alpha, Q) {
-    .Call(`_AHM_compute_DIC`, y, N, J, K, chain, s, g, alpha, Q)
+    .Call(`_cdmArch_compute_DIC`, y, N, J, K, chain, s, g, alpha, Q)
 }
 
 dina_logL_vec_fixedQ <- function(y, N, J, K, chain, s, g, alpha, Q) {
-    .Call(`_AHM_dina_logL_vec_fixedQ`, y, N, J, K, chain, s, g, alpha, Q)
+    .Call(`_cdmArch_dina_logL_vec_fixedQ`, y, N, J, K, chain, s, g, alpha, Q)
 }
 
 compute_DIC_fixedQ <- function(y, N, J, K, chain, s, g, alpha, Q) {
-    .Call(`_AHM_compute_DIC_fixedQ`, y, N, J, K, chain, s, g, alpha, Q)
+    .Call(`_cdmArch_compute_DIC_fixedQ`, y, N, J, K, chain, s, g, alpha, Q)
 }
 
 inv_bijectionvector <- function(K, CL) {
-    .Call(`_AHM_inv_bijectionvector`, K, CL)
+    .Call(`_cdmArch_inv_bijectionvector`, K, CL)
 }
 
 twoToten <- function(x) {
-    .Call(`_AHM_twoToten`, x)
+    .Call(`_cdmArch_twoToten`, x)
 }
 
 ff <- function(a) {
-    .Call(`_AHM_ff`, a)
+    .Call(`_cdmArch_ff`, a)
 }
 
 Boolean <- function(A) {
-    .Call(`_AHM_Boolean`, A)
+    .Call(`_cdmArch_Boolean`, A)
 }
 
 Booleanvec <- function(A) {
-    .Call(`_AHM_Booleanvec`, A)
+    .Call(`_cdmArch_Booleanvec`, A)
 }
 
 Reachability <- function(StrucMat, K) {
-    .Call(`_AHM_Reachability`, StrucMat, K)
+    .Call(`_cdmArch_Reachability`, StrucMat, K)
 }
 
 ConnectMat <- function(R, K) {
-    .Call(`_AHM_ConnectMat`, R, K)
+    .Call(`_cdmArch_ConnectMat`, R, K)
 }
 
 Transitive <- function(G, K) {
-    .Call(`_AHM_Transitive`, G, K)
+    .Call(`_cdmArch_Transitive`, G, K)
 }
 
 Trans_10to2 <- function(K, CL) {
-    .Call(`_AHM_Trans_10to2`, K, CL)
+    .Call(`_cdmArch_Trans_10to2`, K, CL)
 }
 
 Trans_10to2_mat <- function(K, CL) {
-    .Call(`_AHM_Trans_10to2_mat`, K, CL)
+    .Call(`_cdmArch_Trans_10to2_mat`, K, CL)
 }
 
 Trans_2to10 <- function(x, K) {
-    .Call(`_AHM_Trans_2to10`, x, K)
+    .Call(`_cdmArch_Trans_2to10`, x, K)
 }
 
 Trans_2to10_mat <- function(x, K) {
-    .Call(`_AHM_Trans_2to10_mat`, x, K)
+    .Call(`_cdmArch_Trans_2to10_mat`, x, K)
 }
 
 Reduced_alpha <- function(alpha_all, R, K) {
-    .Call(`_AHM_Reduced_alpha`, alpha_all, R, K)
+    .Call(`_cdmArch_Reduced_alpha`, alpha_all, R, K)
 }
 
 generate_sequence <- function(N) {
-    .Call(`_AHM_generate_sequence`, N)
+    .Call(`_cdmArch_generate_sequence`, N)
 }
 
 sample_int <- function(N, N1) {
-    .Call(`_AHM_sample_int`, N, N1)
+    .Call(`_cdmArch_sample_int`, N, N1)
 }
 
 random_Q <- function(J, K) {
-    .Call(`_AHM_random_Q`, J, K)
+    .Call(`_cdmArch_random_Q`, J, K)
 }
 
