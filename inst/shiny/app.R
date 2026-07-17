@@ -99,7 +99,7 @@ ui <- shiny::navbarPage(
                         "G1 Linear" = "linear",
                         "G2 Convergent" = "convergent",
                         "G3 Divergent" = "divergent",
-                        "G4 Unstructured" = "unstructured",
+                        "G4 Partially Structured" = "partially_structured",
                         "Custom matrix" = "custom"),
             selected = "linear"
           ),

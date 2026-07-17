@@ -5,7 +5,7 @@
 \title{Generate common attribute hierarchy structures}
 \usage{
 simu_G(
-  type = c("linear", "convergent", "divergent", "unstructured", "none"),
+  type = c("linear", "convergent", "divergent", "partially_structured", "none"),
   K = 4L
 )
 }
@@ -13,8 +13,10 @@ simu_G(
 \item{type}{Hierarchy type. \code{"linear"} is G1
 (A1 -> A2 -> A3 -> A4); \code{"convergent"} is G2
 (A1 -> A2, A1 -> A3, A2 -> A4, A3 -> A4); \code{"divergent"}
-is G3 (A1 -> A2, A1 -> A3, A1 -> A4); \code{"unstructured"} is G4
-(A1 -> A2, A1 -> A3, A3 -> A4); and \code{"none"} has no edges.}
+is G3 (A1 -> A2, A1 -> A3, A1 -> A4); \code{"partially_structured"}
+is G4 partially structured (A1 -> A2, A1 -> A3, A3 -> A4); and
+\code{"none"} has no edges. The legacy value \code{"unstructured"} is
+accepted as an alias for \code{"partially_structured"}.}
 
 \item{K}{Number of attributes. The G1--G4 presets require \code{K = 4};
 \code{"none"} is available for any positive \code{K}.}

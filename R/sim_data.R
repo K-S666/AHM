@@ -151,16 +151,33 @@ ahmq_reduce_alpha <- function(alpha, G)
 #' @param type Hierarchy type. \code{"linear"} is G1
 #'   (A1 -> A2 -> A3 -> A4); \code{"convergent"} is G2
 #'   (A1 -> A2, A1 -> A3, A2 -> A4, A3 -> A4); \code{"divergent"}
-#'   is G3 (A1 -> A2, A1 -> A3, A1 -> A4); \code{"unstructured"} is G4
-#'   (A1 -> A2, A1 -> A3, A3 -> A4); and \code{"none"} has no edges.
+#'   is G3 (A1 -> A2, A1 -> A3, A1 -> A4); \code{"partially_structured"} is G4
+#'   partially structured (A1 -> A2, A1 -> A3, A3 -> A4); and \code{"none"} has no edges.
+#'   The legacy value \code{"unstructured"} is accepted as an alias for
+#'   \code{"partially_structured"}.
 #' @param K Number of attributes. The G1--G4 presets require \code{K = 4};
 #'   \code{"none"} is available for any positive \code{K}.
 #' @return A binary \eqn{K \times K} adjacency matrix.
 #' @export
-simu_G <- function(type = c("linear", "convergent", "divergent", "unstructured", "none"),
+simu_G <- function(type = c("linear", "convergent", "divergent",
+                         "partially_structured", "none"),
                    K = 4L)
 {
-  type <- match.arg(type)
+  if (missing(type)) {
+    type <- "linear"
+  } else {
+    type <- match.arg(type, c("linear", "convergent", "divergent",
+                             "partially_structured", "none",
+                             "unstructured"))
+  }
+  if (identical(type, "unstructured")) {
+    warning(
+      "simu_G(\"unstructured\") is deprecated; use ",
+      "simu_G(\"partially_structured\") instead.",
+      call. = FALSE
+    )
+    type <- "partially_structured"
+  }
   K <- as.integer(K)
   if (length(K) != 1L || is.na(K) || K < 1L) {
     stop("K must be a positive integer.", call. = FALSE)
@@ -183,7 +200,7 @@ simu_G <- function(type = c("linear", "convergent", "divergent", "unstructured",
     G[1L, 2L] <- 1
     G[1L, 3L] <- 1
     G[1L, 4L] <- 1
-  } else if (type == "unstructured") {
+  } else if (type == "partially_structured") {
     G[1L, 2L] <- 1
     G[1L, 3L] <- 1
     G[3L, 4L] <- 1

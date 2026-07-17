@@ -313,7 +313,7 @@ plot_G_graph <- function(G,
     if (K == 4L && identical(unname(A), unname(simu_G("divergent")))) {
       return(data.frame(x = c(0, -1, 0, 1), y = c(1, 0, 0, 0), depth = c(0, 1, 1, 1)))
     }
-    if (K == 4L && identical(unname(A), unname(simu_G("unstructured")))) {
+    if (K == 4L && identical(unname(A), unname(simu_G("partially_structured")))) {
       return(data.frame(x = c(0, -1, 1, 1), y = c(2, 1, 1, 0), depth = c(0, 1, 1, 2)))
     }
 
